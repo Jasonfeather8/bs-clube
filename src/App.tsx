@@ -4,7 +4,6 @@ import AdminLayout from './layouts/AdminLayout';
 import { RequireAdmin, RequireAuth } from './components/RouteGuards';
 import AuthPage from './pages/Auth';
 
-import Lobby from './pages/Lobby';
 import HomeLogada from './pages/HomeLogada';
 import SelecaoDezenas from './pages/SelecaoDezenas';
 import Resultados from './pages/Resultados';
@@ -21,7 +20,6 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<AuthPage view="sign_in" />} />
       <Route path="/cadastro" element={<AuthPage view="sign_up" />} />
-      <Route path="/lobby" element={<Lobby />} />
 
       <Route element={<AppLayout />}>
         <Route path="/" element={<HomeLogada />} />
