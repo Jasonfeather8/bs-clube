@@ -18,6 +18,9 @@ interface CategoriesManagementTableProps {
   onEditCategory: (category: AdminCategory) => void;
   onRegisterResult: (category: AdminCategory) => void;
   onViewResult: (category: AdminCategory) => void;
+  onToggleCategoryStatus: (category: AdminCategory) => void;
+  onDeleteCategory: (category: AdminCategory) => void;
+  isBusy?: boolean;
 }
 
 export default function CategoriesManagementTable({
@@ -36,6 +39,9 @@ export default function CategoriesManagementTable({
   onEditCategory,
   onRegisterResult,
   onViewResult,
+  onToggleCategoryStatus,
+  onDeleteCategory,
+  isBusy = false,
 }: CategoriesManagementTableProps) {
   const formatCurrency = (val: number) => `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const filterClass = (filter: AdminCategoryStatus) =>
@@ -65,6 +71,7 @@ export default function CategoriesManagementTable({
           <button type="button" onClick={() => onStatusFilterChange('open')} className={filterClass('open')}>Abertos</button>
           <button type="button" onClick={() => onStatusFilterChange('closed')} className={filterClass('closed')}>Finalizados</button>
           <button type="button" onClick={() => onStatusFilterChange('completed')} className={filterClass('completed')}>Concluídos</button>
+          <button type="button" onClick={() => onStatusFilterChange('inactive')} className={filterClass('inactive')}>Inativos</button>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-400">
           <span>Mês</span>
@@ -83,7 +90,7 @@ export default function CategoriesManagementTable({
                 const progress = category.vagas > 0 ? Math.min((category.filled / category.vagas) * 100, 100) : 0;
                 const completed = category.poolStatus === 'completed';
                 const closed = category.poolStatus === 'closed';
-                const inactive = category.status === 'inativo';
+                const inactive = category.poolStatus === 'inactive';
                 const openResult = () => onViewResult(category);
                 return <tr
                   key={category.id}
@@ -104,7 +111,16 @@ export default function CategoriesManagementTable({
                   <td className="p-4 text-center text-slate-300"><div className="flex flex-col items-center justify-center w-24 mx-auto"><span className="text-xs font-bold font-mono">{category.filled} <span className="text-slate-500 font-normal">/ {category.vagas}</span></span><div className="w-full h-1.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden"><div className="h-full bg-gradient-to-r from-emerald-500 to-brand-accent rounded-full" style={{ width: `${progress}%` }}></div></div></div></td>
                   <td className="p-4 text-center text-slate-300 text-xs font-mono">{category.drawDate || '—'}</td>
                   <td className="p-4 text-center">{completed ? <div className="flex flex-col items-center gap-1"><span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20">Concluído</span><div className="flex gap-0.5">{(category.numbers ?? []).map((number) => <span key={number} className="text-[9px] text-amber-300 font-mono">{String(number).padStart(2, '0')}</span>)}</div></div> : closed ? <span className="bg-amber-500/10 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/20">Vagas preenchidas</span> : inactive ? <span className="bg-slate-800 text-slate-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-700">Inativo</span> : <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-blue-500/20">Aberto</span>}</td>
-                  <td className="p-4" onClick={(event) => event.stopPropagation()}><div className="flex justify-center gap-2">{!completed && !closed && !inactive && <button type="button" onClick={() => onEditCategory(category)} className="px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-emerald-400 text-[10px] font-bold transition cursor-pointer" aria-label={`Editar ${category.name}`}><i className="fa-solid fa-pen"></i></button>}{!completed && !inactive && <button type="button" onClick={() => onRegisterResult(category)} className="px-2.5 py-1.5 rounded-lg border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 text-[10px] font-bold transition cursor-pointer">Registrar resultado</button>}{completed && <button type="button" onClick={() => onViewResult(category)} className="px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-amber-400 text-[10px] font-bold transition cursor-pointer" aria-label={`Ver resultado de ${category.name}`} title="Ver resultado"><i className="fa-solid fa-eye"></i></button>}</div></td>
+                  <td className="p-4" onClick={(event) => event.stopPropagation()}>
+                    <div className="flex justify-center gap-2">
+                      {!completed && !closed && !inactive && <button type="button" onClick={() => onEditCategory(category)} disabled={isBusy} className="px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-emerald-400 text-[10px] font-bold transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 disabled:cursor-not-allowed disabled:opacity-50" aria-label={`Editar ${category.name}`}><i className="fa-solid fa-pen"></i></button>}
+                      {!completed && !inactive && <button type="button" onClick={() => onRegisterResult(category)} disabled={isBusy} className="px-2.5 py-1.5 rounded-lg border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 text-[10px] font-bold transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 disabled:cursor-not-allowed disabled:opacity-50">Registrar resultado</button>}
+                      {!completed && !inactive && <button type="button" onClick={() => onToggleCategoryStatus(category)} disabled={isBusy} className="px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-rose-400 text-[10px] font-bold transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 disabled:cursor-not-allowed disabled:opacity-50" aria-label={`Desativar ${category.name}`} title="Desativar"><i className="fa-solid fa-ban"></i></button>}
+                      {inactive && <button type="button" onClick={() => onToggleCategoryStatus(category)} disabled={isBusy} className="px-2.5 py-1.5 rounded-lg border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 text-[10px] font-bold transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 disabled:cursor-not-allowed disabled:opacity-50" aria-label={`Reativar ${category.name}`} title="Reativar"><i className="fa-solid fa-rotate-left"></i></button>}
+                      {!completed && <button type="button" onClick={() => { if (window.confirm(`Excluir o bolão "${category.name}"? Esta ação não pode ser desfeita.`)) onDeleteCategory(category); }} disabled={isBusy} className="px-2.5 py-1.5 rounded-lg border border-rose-500/40 text-rose-300 hover:bg-rose-500/10 text-[10px] font-bold transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 disabled:cursor-not-allowed disabled:opacity-50" aria-label={`Excluir ${category.name}`} title="Excluir"><i className="fa-solid fa-trash"></i></button>}
+                      {completed && <button type="button" onClick={() => onViewResult(category)} disabled={isBusy} className="px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-amber-400 text-[10px] font-bold transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 disabled:cursor-not-allowed disabled:opacity-50" aria-label={`Ver resultado de ${category.name}`} title="Ver resultado"><i className="fa-solid fa-eye"></i></button>}
+                    </div>
+                  </td>
                 </tr>;
               })}
             </tbody>

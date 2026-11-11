@@ -186,7 +186,7 @@ export interface QuotaInput {
   amount: number;
 }
 
-export type AdminCategoryStatus = 'open' | 'closed' | 'completed';
+export type AdminCategoryStatus = 'open' | 'closed' | 'completed' | 'inactive';
 
 export interface AdminCategory {
   id: number | string;

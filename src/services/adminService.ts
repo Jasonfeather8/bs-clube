@@ -95,7 +95,7 @@ function mapCategory(row: Row): AdminCategory {
   const pool = pools[0] ?? {};
   const draw = Array.isArray(pool.draws) ? pool.draws[0] : pool.draws;
   const rawPoolStatus = pool.status === 'late_registration' ? 'open' : pool.status;
-  const poolStatus: AdminCategoryStatus = rawPoolStatus === 'completed' ? 'completed' : rawPoolStatus === 'closed' ? 'closed' : 'open';
+  const poolStatus: AdminCategoryStatus = rawPoolStatus === 'inactive' ? 'inactive' : rawPoolStatus === 'completed' ? 'completed' : rawPoolStatus === 'closed' ? 'closed' : 'open';
   return {
     id: String(row.id),
     poolId: pool.id ? String(pool.id) : undefined,
@@ -113,7 +113,7 @@ function mapCategory(row: Row): AdminCategory {
     housePercentage: Number(pool.house_percentage ?? DEFAULT_PRIZE_SETTINGS.housePercentage),
     winnerPercentage: Number(pool.winner_percentage ?? DEFAULT_PRIZE_SETTINGS.winnerPercentage),
     poolStatus,
-    status: row.status === 'inactive' ? 'inativo' : poolStatus === 'completed' ? 'concluido' : poolStatus === 'closed' ? 'finalizado' : 'em_andamento',
+    status: poolStatus === 'inactive' ? 'inativo' : poolStatus === 'completed' ? 'concluido' : poolStatus === 'closed' ? 'finalizado' : 'em_andamento',
   };
 }
 
@@ -471,6 +471,76 @@ export const adminService = {
       .eq('id', pool.draw_id);
     if (drawError) throw drawError;
     return readCategory(id);
+  },
+
+  async deleteCategory(id: number | string): Promise<void> {
+    await requireAdmin();
+    const { data: pools, error: poolLookupError } = await supabase
+      .from('pools')
+      .select('id, draw_id')
+      .eq('category_id', String(id))
+      .limit(1);
+    if (poolLookupError) throw poolLookupError;
+    const pool = pools?.[0];
+    if (!pool) throw new Error('Bolão não encontrado para exclusão.');
+
+    const historyTables = ['purchased_bets', 'prize_settlements', 'prize_awards', 'bet_audit_ledger'] as const;
+    for (const table of historyTables) {
+      const { count, error } = await supabase
+        .from(table)
+        .select('id', { count: 'exact', head: true })
+        .eq('pool_id', pool.id);
+      if (error) throw error;
+      if ((count ?? 0) > 0) {
+        throw new Error('Este bolão já possui apostas ou apuração registradas e não pode ser excluído. Use "Desativar" para retirá-lo da vitrine.');
+      }
+    }
+
+    const { error: deletePoolError } = await supabase.from('pools').delete().eq('id', pool.id);
+    if (deletePoolError) throw deletePoolError;
+
+    if (pool.draw_id) {
+      const { count: drawPoolCount, error: drawCountError } = await supabase
+        .from('pools')
+        .select('id', { count: 'exact', head: true })
+        .eq('draw_id', pool.draw_id);
+      if (drawCountError) throw drawCountError;
+      if (drawPoolCount === 0) {
+        const { error: deleteDrawError } = await supabase.from('draws').delete().eq('id', pool.draw_id);
+        if (deleteDrawError) throw deleteDrawError;
+      }
+    }
+
+    const { count: categoryPoolCount, error: categoryCountError } = await supabase
+      .from('pools')
+      .select('id', { count: 'exact', head: true })
+      .eq('category_id', String(id));
+    if (categoryCountError) throw categoryCountError;
+    if (categoryPoolCount === 0) {
+      const { error: deleteCategoryError } = await supabase.from('pool_categories').delete().eq('id', String(id));
+      if (deleteCategoryError) throw deleteCategoryError;
+    }
+  },
+
+  async setCategoryActive(id: number | string, isActive: boolean): Promise<void> {
+    await requireAdmin();
+    const { data: pools, error: poolLookupError } = await supabase
+      .from('pools')
+      .select('id, status')
+      .eq('category_id', String(id))
+      .limit(1);
+    if (poolLookupError) throw poolLookupError;
+    const target = pools?.[0];
+    if (!target) throw new Error('Bolão não encontrado.');
+
+    if (!isActive && target.status === 'completed') {
+      throw new Error('Bolões já concluídos não podem ser desativados.');
+    }
+    const { error } = await supabase
+      .from('pools')
+      .update({ status: isActive ? 'open' : 'inactive' })
+      .eq('id', target.id);
+    if (error) throw error;
   },
 
   async getAdminResultDetails(poolId: string): Promise<AdminResultDetail> {

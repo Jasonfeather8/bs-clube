@@ -156,6 +156,35 @@ export function useUpdateCategory() {
   });
 }
 
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number | string) => adminService.deleteCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ADMIN_CATEGORIES_KEY });
+      queryClient.invalidateQueries({ queryKey: ADMIN_METRICS_KEY });
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+      queryClient.invalidateQueries({ queryKey: RESULTS_GAMES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['draws'] });
+    },
+  });
+}
+
+export function useToggleCategoryStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isActive }: { id: number | string; isActive: boolean }) =>
+      adminService.setCategoryActive(id, isActive),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ADMIN_CATEGORIES_KEY });
+      queryClient.invalidateQueries({ queryKey: ADMIN_METRICS_KEY });
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+      queryClient.invalidateQueries({ queryKey: RESULTS_GAMES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['draws'] });
+    },
+  });
+}
+
 export function useRegisterOfficialResult() {
   const queryClient = useQueryClient();
   return useMutation({

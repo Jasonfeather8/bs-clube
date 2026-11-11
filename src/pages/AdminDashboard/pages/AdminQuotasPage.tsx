@@ -11,6 +11,14 @@ export default function AdminQuotasPage() {
   const [editingQuota, setEditingQuota] = useState<Quota | null>(null);
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const showMutationError = (error: Error, mapForeignKey = false) => {
+    const message = error?.message || 'Não foi possível concluir a operação.';
+    setErrorMessage(mapForeignKey && /foreign key|violates/i.test(message)
+      ? 'Esta cota está em uso por um bolão e não pode ser excluída. Desative-a para impedir novos bolões.'
+      : message);
+  };
 
   const resetForm = () => {
     setEditingQuota(null);
@@ -29,18 +37,26 @@ export default function AdminQuotasPage() {
     const value = Number(amount.replace(',', '.'));
     if (!name.trim() || !Number.isFinite(value) || value <= 0) return;
     const input = { name: name.trim(), amount: Number(value.toFixed(2)) };
-    const options = { onSuccess: resetForm };
+    setErrorMessage(null);
+    const options = {
+      onSuccess: resetForm,
+      onError: (error: Error) => showMutationError(error),
+    };
     if (editingQuota) updateMutation.mutate({ id: editingQuota.id, input }, options);
     else createMutation.mutate(input, options);
   };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
   const remove = (quota: Quota) => {
-    if (window.confirm(`Excluir a cota "${quota.name}"? Bolões antigos não serão alterados.`)) deleteMutation.mutate(quota.id);
+    setErrorMessage(null);
+    if (window.confirm(`Excluir a cota "${quota.name}"? Esta ação não pode ser desfeita.`)) {
+      deleteMutation.mutate(quota.id, { onError: (error: Error) => showMutationError(error, true) });
+    }
   };
 
   return <div className="max-w-7xl mx-auto space-y-6">
     <div><h3 className="font-heading text-2xl font-black text-white">Catálogo de cotas</h3><p className="text-sm text-slate-400 mt-1">Gerencie opções usadas pelos novos bolões. Valores antigos permanecem congelados no bolão.</p></div>
+    {errorMessage && <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300">{errorMessage}</div>}
     <form onSubmit={submit} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row gap-3">
       <label className="flex-1 text-xs text-slate-400">Nome<input value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} className="mt-1 w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:border-emerald-400 focus:outline-none" placeholder="Cota R$ 10" /></label>
       <label className="sm:w-40 text-xs text-slate-400">Valor (R$)<input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" required className="mt-1 w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:border-emerald-400 focus:outline-none" placeholder="10,00" /></label>

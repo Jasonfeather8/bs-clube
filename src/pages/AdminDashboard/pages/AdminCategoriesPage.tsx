@@ -14,6 +14,10 @@ export default function AdminCategoriesPage() {
     setCategoryStatusFilter,
     setCategoryMonthFilter,
     isCategoriesLoading,
+    isDeletingCategory,
+    isTogglingCategoryStatus,
+    handleToggleCategoryStatus,
+    handleDeleteCategory,
     setIsCategoryModalOpen,
     setIsPrizeSettingsModalOpen,
     setEditingCategory,
@@ -39,6 +43,9 @@ export default function AdminCategoriesPage() {
         onEditCategory={(category) => { setEditingCategory(category); setIsCategoryModalOpen(true); }}
         onRegisterResult={(category) => setResultCategory(category)}
         onViewResult={(category) => setReadOnlyResultCategory(category)}
+        onToggleCategoryStatus={handleToggleCategoryStatus}
+        onDeleteCategory={handleDeleteCategory}
+        isBusy={isDeletingCategory || isTogglingCategoryStatus}
       />
     </div>
   );

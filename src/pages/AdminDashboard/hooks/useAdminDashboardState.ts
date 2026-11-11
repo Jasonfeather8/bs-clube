@@ -10,6 +10,8 @@ import {
   useAdminResultDetails,
   useCreateCategory,
   useUpdateCategory,
+  useDeleteCategory,
+  useToggleCategoryStatus,
   useRegisterOfficialResult,
   usePrizeSettings,
   useUpdatePrizeSettings,
@@ -63,6 +65,8 @@ export function useAdminDashboardState() {
   const toggleUserStatusMutation = useToggleUserStatus();
   const createCategoryMutation = useCreateCategory();
   const updateCategoryMutation = useUpdateCategory();
+  const deleteCategoryMutation = useDeleteCategory();
+  const toggleCategoryStatusMutation = useToggleCategoryStatus();
   const registerResultMutation = useRegisterOfficialResult();
   const updatePrizeSettingsMutation = useUpdatePrizeSettings();
   const filteredUsers = users;
@@ -121,6 +125,27 @@ export function useAdminDashboardState() {
     }
   };
 
+  const handleToggleCategoryStatus = async (category: AdminCategory) => {
+    const isActive = category.poolStatus === 'inactive';
+    try {
+      await toggleCategoryStatusMutation.mutateAsync({ id: category.id, isActive });
+      setAlertConfig(isActive
+        ? { title: 'Bolão Reativado', msg: `O bolão "${category.name}" voltou a aparecer na vitrine.`, icon: 'fa-eye text-emerald-400' }
+        : { title: 'Bolão Desativado', msg: `O bolão "${category.name}" foi retirado da vitrine e não aparece mais para os apostadores.`, icon: 'fa-eye-slash text-slate-300' });
+    } catch (err: any) {
+      setAlertConfig({ title: 'Erro', msg: err?.message || 'Falha ao alterar o status do bolão.', icon: 'fa-triangle-exclamation text-rose-400' });
+    }
+  };
+
+  const handleDeleteCategory = async (category: AdminCategory) => {
+    try {
+      await deleteCategoryMutation.mutateAsync(category.id);
+      setAlertConfig({ title: 'Bolão Excluído', msg: `O bolão "${category.name}" foi removido definitivamente.`, icon: 'fa-trash text-rose-400' });
+    } catch (err: any) {
+      setAlertConfig({ title: 'Erro ao Excluir', msg: err?.message || 'Falha ao excluir bolão.', icon: 'fa-triangle-exclamation text-rose-400' });
+    }
+  };
+
   const handleUpdatePrizeSettings = async (settings: PrizeSettings) => {
     try {
       await updatePrizeSettingsMutation.mutateAsync(settings);
@@ -150,8 +175,10 @@ export function useAdminDashboardState() {
     metrics, isMetricsLoading, withdrawals, pendingWithdrawals, isWithdrawalsLoading, users, filteredUsers, isUsersLoading,
     categories, isCategoriesLoading, isProcessingWithdrawal: approveWithdrawalMutation.isPending || rejectWithdrawalMutation.isPending,
     isCreatingCategory: createCategoryMutation.isPending || updateCategoryMutation.isPending,
+    isDeletingCategory: deleteCategoryMutation.isPending,
+    isTogglingCategoryStatus: toggleCategoryStatusMutation.isPending,
     isUpdatingPrizeSettings: updatePrizeSettingsMutation.isPending,
     isRegisteringResult: registerResultMutation.isPending,
-    handleApproveWithdrawal, handleRejectWithdrawal, handleToggleUser, handleCreateCategory, handleUpdateCategory, handleUpdatePrizeSettings, handleRegisterResult,
+    handleApproveWithdrawal, handleRejectWithdrawal, handleToggleUser, handleCreateCategory, handleUpdateCategory, handleToggleCategoryStatus, handleDeleteCategory, handleUpdatePrizeSettings, handleRegisterResult,
   };
 }
