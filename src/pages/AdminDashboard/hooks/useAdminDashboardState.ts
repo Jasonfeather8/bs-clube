@@ -33,10 +33,7 @@ export function useAdminDashboardState() {
   const [userStatusFilter, setUserStatusFilter] = useState<'all' | 'active' | 'blocked'>('all');
   const [userPage, setUserPage] = useState(1);
   const [categoryStatusFilter, setCategoryStatusFilter] = useState<AdminCategoryStatus>('open');
-  const [categoryMonthFilter, setCategoryMonthFilter] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  });
+  const [categoryMonthFilter, setCategoryMonthFilter] = useState('');
   const [categoryPage, setCategoryPage] = useState(1);
 
   const { data: metrics, isLoading: isMetricsLoading } = useAdminMetrics();

@@ -77,6 +77,9 @@ export default function CategoriesManagementTable({
           <span>Mês</span>
           <input type="month" value={monthFilter} onChange={(event) => onMonthFilterChange(event.target.value)} className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1.5 text-slate-200 focus:border-emerald-400 focus:outline-none" />
         </label>
+        {monthFilter && (
+          <button type="button" onClick={() => onMonthFilterChange('')} className="rounded-lg border border-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 transition hover:border-emerald-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 cursor-pointer">Todos os meses</button>
+        )}
       </div>
 
       <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
@@ -105,7 +108,7 @@ export default function CategoriesManagementTable({
                   tabIndex={completed ? 0 : undefined}
                   aria-label={completed ? `Ver resultado de ${category.name}` : undefined}
                 >
-                  <td className="p-4 font-bold text-white"><div className="flex items-center space-x-2"><div className={`w-2 h-2 rounded-full ${completed ? 'bg-amber-400' : 'bg-emerald-400'}`}></div><span>{category.name}</span></div></td>
+                  <td className="p-4 font-bold text-white"><div className="flex items-center space-x-2"><div className={`w-2 h-2 rounded-full ${completed ? 'bg-amber-400' : inactive ? 'bg-slate-500' : 'bg-emerald-400'}`}></div><span>{category.name}</span></div></td>
                   <td className="p-4 text-center text-slate-300 font-mono">#{category.concurso || '—'}</td>
                   <td className="p-4 text-center font-bold text-emerald-400 font-mono">{formatCurrency(category.cota)}</td>
                   <td className="p-4 text-center text-slate-300"><div className="flex flex-col items-center justify-center w-24 mx-auto"><span className="text-xs font-bold font-mono">{category.filled} <span className="text-slate-500 font-normal">/ {category.vagas}</span></span><div className="w-full h-1.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden"><div className="h-full bg-gradient-to-r from-emerald-500 to-brand-accent rounded-full" style={{ width: `${progress}%` }}></div></div></div></td>

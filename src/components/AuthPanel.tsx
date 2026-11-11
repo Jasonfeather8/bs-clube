@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export type AuthView = 'sign_in' | 'sign_up';
@@ -67,6 +68,7 @@ function signInErrorMessage(message: string) {
 }
 
 function SignInForm() {
+  const { clearAccessNotice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -75,6 +77,7 @@ function SignInForm() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    clearAccessNotice();
     setError(null);
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) {
@@ -220,6 +223,8 @@ function SignUpForm() {
 }
 
 export default function AuthPanel({ view, onViewChange }: AuthPanelProps) {
+  const { accessNotice } = useAuth();
+
   return (
     <div className="w-full max-w-md">
       <div className="mb-3 grid grid-cols-2 gap-1 rounded-2xl border border-slate-800 bg-slate-950/80 p-1" role="tablist" aria-label="Autenticação">
@@ -252,6 +257,9 @@ export default function AuthPanel({ view, onViewChange }: AuthPanelProps) {
           <p className="mt-2 text-sm text-slate-400">{view === 'sign_in' ? 'Entre para continuar no BS Clube.' : 'Cadastre-se para participar dos bolões.'}</p>
         </div>
 
+        {accessNotice && (
+          <p className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300" role="alert">{accessNotice}</p>
+        )}
         {view === 'sign_in' ? <SignInForm /> : <SignUpForm />}
       </section>
     </div>
