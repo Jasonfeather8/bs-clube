@@ -43,6 +43,8 @@ export default function Carteira() {
     depositStatus,
     depositError,
     isDepositSuccess,
+    verifyDeposit,
+    isVerifyingDeposit,
     handleDepositInput,
     addDepositQuick,
     generatePixPayment,
@@ -110,6 +112,8 @@ export default function Carteira() {
         qrCodeBase64={qrCodeBase64}
         status={depositStatus}
         errorMessage={depositError}
+        onVerify={() => { void verifyDeposit(); }}
+        isVerifying={isVerifyingDeposit}
       />
 
       <WithdrawModal

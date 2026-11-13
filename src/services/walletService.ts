@@ -165,6 +165,14 @@ export const walletService = {
     };
   },
 
+  async reconcileDeposits(): Promise<WalletBalance> {
+    const { data, error } = await supabase.functions.invoke('pushinpay-reconcile', { body: {} });
+    if (error) throw error;
+    const response = data as { balance?: Row } | null;
+    if (!response?.balance) throw new Error('A resposta de reconciliação da carteira é inválida.');
+    return mapBalance(response.balance);
+  },
+
   async getDepositStatus(paymentId: string): Promise<DepositStatus> {
     const user = await currentUser();
     const { data, error } = await supabase.from('payments').select('id, status, provider_status, amount, paid_at')

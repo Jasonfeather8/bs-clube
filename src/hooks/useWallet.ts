@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { walletService } from '../services/walletService';
-import { WalletTransactionFilter } from '../types';
+import { WalletBalance, WalletTransactionFilter } from '../types';
 
 export const WALLET_BALANCE_KEY = ['wallet', 'balance'];
 export const TRANSACTIONS_KEY = ['wallet', 'transactions'];
+
+let lastReconciliationAt = 0;
+let reconciliationInFlight: Promise<WalletBalance> | null = null;
 
 export function useWalletBalance(options: { refetchInterval?: number | false } = {}) {
   const { user } = useAuth();
@@ -50,6 +53,31 @@ export function useDeposit() {
       queryClient.invalidateQueries({ queryKey: TRANSACTIONS_KEY });
     },
   });
+}
+
+export function useReconcileDeposits() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => walletService.reconcileDeposits(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: WALLET_BALANCE_KEY });
+      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_KEY });
+      queryClient.invalidateQueries({ queryKey: ['wallet', 'deposit-status'] });
+    },
+  });
+
+  const reconcileDeposits = useCallback(() => {
+    if (reconciliationInFlight) return reconciliationInFlight;
+    if (Date.now() - lastReconciliationAt < 20_000) return Promise.resolve(undefined);
+
+    lastReconciliationAt = Date.now();
+    reconciliationInFlight = mutation.mutateAsync().finally(() => {
+      reconciliationInFlight = null;
+    });
+    return reconciliationInFlight;
+  }, [mutation.mutateAsync]);
+
+  return { reconcileDeposits, isPending: mutation.isPending };
 }
 
 export function useDepositStatus(paymentId?: string) {

@@ -13,6 +13,17 @@ interface TransactionHistoryProps {
   onSelectTransaction: (tx: UserTransaction) => void;
 }
 
+const STATUS_META: Record<string, { label: string; className: string; confirmed: boolean }> = {
+  success: { label: 'Confirmado', className: 'text-emerald-500', confirmed: true },
+  confirmed: { label: 'Confirmado', className: 'text-emerald-500', confirmed: true },
+  paid: { label: 'Confirmado', className: 'text-emerald-500', confirmed: true },
+  approved: { label: 'Aprovado', className: 'text-emerald-500', confirmed: true },
+  pending: { label: 'Pendente', className: 'text-amber-400', confirmed: false },
+  failed: { label: 'Falhou', className: 'text-red-400', confirmed: false },
+  canceled: { label: 'Cancelado', className: 'text-red-400', confirmed: false },
+  rejected: { label: 'Recusado', className: 'text-red-400', confirmed: false },
+};
+
 export default function TransactionHistory({
   transactions,
   totalCount,
@@ -129,7 +140,15 @@ export default function TransactionHistory({
           </div>
         ) : (
           transactions.map((t, index) => {
-            const isPositive = t.value > 0;
+            const normalizedStatus = String(t.status).toLowerCase();
+            const status = STATUS_META[normalizedStatus] ?? { label: t.status, className: 'text-slate-400', confirmed: false };
+            const amountClass = status.confirmed && t.value > 0
+              ? 'text-emerald-400'
+              : normalizedStatus === 'pending'
+                ? 'text-amber-400'
+                : ['failed', 'canceled', 'rejected'].includes(normalizedStatus)
+                  ? 'text-slate-400'
+                  : 'text-slate-300';
             let iconElement;
             if (t.type === 'deposit') {
               iconElement = (
@@ -179,14 +198,10 @@ export default function TransactionHistory({
                   </div>
                 </div>
                 <div className="text-right">
-                  <p
-                    className={`text-sm font-bold ${
-                      isPositive ? 'text-emerald-400' : 'text-slate-300'
-                    }`}
-                  >
-                    {isPositive ? '+' : '-'} {formatCurrency(t.value)}
+                  <p className={`text-sm font-bold ${amountClass}`}>
+                    {status.confirmed && t.value > 0 ? '+' : t.value < 0 ? '-' : ''} {formatCurrency(t.value)}
                   </p>
-                  <span className="text-[10px] text-emerald-500 font-medium">Aprovado</span>
+                  <span className={`text-[10px] font-medium ${status.className}`}>{status.label}</span>
                 </div>
               </div>
             );

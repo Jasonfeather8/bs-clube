@@ -9,6 +9,8 @@ interface PixPaymentSheetProps {
   qrCodeBase64?: string;
   status?: 'pending' | 'confirmed' | 'canceled' | 'failed';
   errorMessage?: string;
+  onVerify?: () => void;
+  isVerifying?: boolean;
 }
 
 export default function PixPaymentSheet({
@@ -20,6 +22,8 @@ export default function PixPaymentSheet({
   qrCodeBase64,
   status = 'pending',
   errorMessage,
+  onVerify,
+  isVerifying = false,
 }: PixPaymentSheetProps) {
   const [copied, setCopied] = useState(false);
 
@@ -115,6 +119,14 @@ export default function PixPaymentSheet({
             <i className="fa-solid fa-circle-notch fa-spin text-brand-pix text-xl"></i>
             <span className="text-xs text-slate-300 font-medium">Aguardando confirmação de pagamento...</span>
             <span className="text-[10px] text-slate-500">O saldo só será liberado após a confirmação do provedor.</span>
+            <button
+              type="button"
+              onClick={onVerify}
+              disabled={isVerifying}
+              className="mt-2 rounded-lg border border-teal-500/30 bg-teal-500/10 px-4 py-2 text-xs font-bold text-teal-300 transition hover:bg-teal-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isVerifying ? <><i className="fa-solid fa-circle-notch fa-spin mr-2" aria-hidden="true"></i>Verificando...</> : 'Já paguei, verificar agora'}
+            </button>
           </div>
         )}
       </div>

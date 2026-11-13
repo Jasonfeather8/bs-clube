@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   useWalletBalance,
   useWalletTransactions,
   useDeposit,
   useDepositStatus,
+  useReconcileDeposits,
   useWithdrawal,
 } from '../../../hooks/useWallet';
 import { UserTransaction, WalletTransactionFilter } from '../../../types';
@@ -39,6 +40,8 @@ export function useCarteiraState() {
   const transactions = transactionPage?.items ?? [];
   const depositMutation = useDeposit();
   const withdrawMutation = useWithdrawal();
+  const { reconcileDeposits, isPending: isVerifyingDeposit } = useReconcileDeposits();
+  const verifyDeposit = useCallback(() => reconcileDeposits().catch(() => undefined), [reconcileDeposits]);
 
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
@@ -46,6 +49,16 @@ export function useCarteiraState() {
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isReceiptSheetOpen, setIsReceiptSheetOpen] = useState(false);
   const [receiptTx, setReceiptTx] = useState<UserTransaction | null>(null);
+
+  useEffect(() => {
+    void verifyDeposit();
+  }, [verifyDeposit]);
+
+  useEffect(() => {
+    if (!isPixSheetOpen) return;
+    const interval = setInterval(() => void verifyDeposit(), 30_000);
+    return () => clearInterval(interval);
+  }, [isPixSheetOpen, verifyDeposit]);
 
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -196,6 +209,8 @@ export function useCarteiraState() {
     depositStatus: depositStatusQuery.data?.status,
     depositError,
     isDepositSuccess,
+    verifyDeposit,
+    isVerifyingDeposit,
     handleDepositInput,
     addDepositQuick,
     generatePixPayment,
