@@ -13,37 +13,15 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-function tokensMatch(received: string, expected: string) {
-  const receivedBytes = new TextEncoder().encode(received);
-  const expectedBytes = new TextEncoder().encode(expected);
-  let difference = receivedBytes.length ^ expectedBytes.length;
-  const length = Math.max(receivedBytes.length, expectedBytes.length);
-  for (let index = 0; index < length; index += 1) {
-    difference |= (receivedBytes[index] ?? 0) ^ (expectedBytes[index] ?? 0);
-  }
-  return difference === 0;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(JSON.stringify({}), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   if (req.method !== 'POST') return jsonResponse({ error: 'Método não permitido.' }, 405);
 
-  const webhookToken = Deno.env.get('PUSHINPAY_WEBHOOK_TOKEN');
-  if (!webhookToken) {
-    console.error('[pushinpay-webhook] PUSHINPAY_WEBHOOK_TOKEN não configurado.');
-    return jsonResponse({ error: 'Token de webhook não configurado no servidor.' }, 500);
-  }
-  // A PushinPay pode enviar o token de duas formas: no header próprio
-  // `x-pushinpay-token` (documentado) ou no header `Authorization` configurado no
-  // painel, com ou sem o prefixo "Bearer ". Aceitamos ambos.
-  const headerToken = (req.headers.get('x-pushinpay-token') ?? '').trim();
-  const authorizationToken = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
-  const receivedToken = headerToken || authorizationToken;
-  if (!receivedToken || !tokensMatch(receivedToken, webhookToken)) {
-    console.error('[pushinpay-webhook] Token de webhook inválido.');
-    return jsonResponse({ error: 'Não autorizado.' }, 401);
-  }
-
+  // A PushinPay NÃO envia um header de autenticação nas notificações de cobrança
+  // (o header customizado do painel só existe para o webhook de MED). Por isso não
+  // exigimos token aqui: a autenticidade é garantida logo abaixo, confirmando que
+  // a cobrança pertence à nossa base e consultando a transação no provedor antes
+  // de qualquer crédito.
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!supabaseUrl || !serviceRoleKey) {
@@ -62,8 +40,8 @@ serve(async (req) => {
   const status = form.get('status');
   if (!id || !status) {
     // O painel da PushinPay faz um POST de teste ao salvar o webhook, e também há
-    // eventos que não são de cobrança (ex.: MED/infração). Como o token já foi
-    // validado, apenas confirmamos o recebimento para não gerar retentativas.
+    // eventos que não são de cobrança (ex.: MED/infração). Apenas confirmamos o
+    // recebimento para não gerar retentativas.
     console.log('[pushinpay-webhook] Evento não reconhecido, recebimento confirmado. Campos:', Object.keys(eventPayload).join(','));
     return jsonResponse({ received: true, ignored: true });
   }
@@ -72,6 +50,25 @@ serve(async (req) => {
   const valueText = form.get('value');
   const amountCents = valueText ? Number(valueText) : null;
   const serviceClient = createClient(supabaseUrl, serviceRoleKey);
+
+  // Só processamos cobranças que existem na nossa base. Sem header de
+  // autenticação, isso evita que requisições arbitrárias disparem consultas ao
+  // provedor — consultas agressivas podem bloquear a conta na PushinPay.
+  const { data: knownPayment, error: knownPaymentError } = await serviceClient
+    .from('payments')
+    .select('id')
+    .eq('provider', 'pushinpay')
+    .eq('external_id', id)
+    .maybeSingle();
+  if (knownPaymentError) {
+    console.error('[pushinpay-webhook] Falha ao verificar a cobrança.', knownPaymentError.message);
+    return jsonResponse({ error: 'Não foi possível verificar a cobrança.' }, 500);
+  }
+  if (!knownPayment) {
+    console.log('[pushinpay-webhook] Cobrança desconhecida ignorada.', id);
+    return jsonResponse({ received: true, ignored: true });
+  }
+
   const eventKey = `${id}:${status}`;
   const { error: insertError } = await serviceClient.from('payment_webhook_events').insert({
     provider: 'pushinpay',
@@ -81,7 +78,9 @@ serve(async (req) => {
     provider_status: status,
     amount_cents: amountCents,
     payload: eventPayload,
-    signature_valid: true,
+    // A PushinPay não assina as notificações de cobrança, então não há assinatura
+    // a validar; a confiança vem da consulta à transação no provedor.
+    signature_valid: false,
   });
   if (insertError?.code === '23505') {
     // O evento já existe. Só podemos encerrar como duplicado se ele realmente foi
