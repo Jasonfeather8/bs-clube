@@ -1,5 +1,16 @@
 import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import {
+  PROVIDER,
+  describeAmount,
+  fetchProviderTransaction,
+  isWithinCheckInterval,
+  normalizeExternalId,
+  parseProviderAmount,
+  providerOutcome,
+  resolveApiUrl,
+  withProviderCheckStamp,
+} from '../_shared/pushinpay.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,7 +57,7 @@ serve(async (req) => {
       .select('id, user_id, external_id, metadata, created_at')
       .eq('user_id', user.id)
       .eq('kind', 'deposit')
-      .eq('provider', 'pushinpay')
+      .eq('provider', PROVIDER)
       .eq('status', 'pending')
       .not('external_id', 'is', null)
       .order('created_at', { ascending: false })
@@ -57,25 +68,21 @@ serve(async (req) => {
     }
 
     const results: { paymentId: string; outcome: string; detail?: string }[] = [];
-    const apiUrl = (Deno.env.get('PUSHINPAY_API_URL') ?? 'https://api.pushinpay.com.br').replace(/\/$/, '');
+    const apiUrl = resolveApiUrl(Deno.env.get('PUSHINPAY_API_URL'));
 
     for (const payment of payments ?? []) {
       const paymentId = String(payment.id);
       try {
-        const metadata = payment.metadata && typeof payment.metadata === 'object' && !Array.isArray(payment.metadata)
-          ? payment.metadata as Record<string, unknown>
-          : {};
-        const previousCheck = typeof metadata.reconcile_checked_at === 'string'
-          ? Date.parse(metadata.reconcile_checked_at)
-          : Number.NaN;
         const checkedNow = Date.now();
-        if (Number.isFinite(previousCheck) && previousCheck <= checkedNow && checkedNow - previousCheck < 45_000) {
+        // O webhook marca a mesma data ao consultar o provedor, então as duas
+        // rotas nunca somam consultas para a mesma transação dentro do intervalo.
+        if (isWithinCheckInterval(payment.metadata, checkedNow)) {
           results.push({ paymentId, outcome: 'skipped', detail: 'cooldown' });
           continue;
         }
 
         const { error: stampError } = await serviceClient.from('payments').update({
-          metadata: { ...metadata, reconcile_checked_at: new Date(checkedNow).toISOString() },
+          metadata: withProviderCheckStamp(payment.metadata, new Date(checkedNow)),
         }).eq('id', payment.id).eq('user_id', user.id);
         if (stampError) {
           console.error('[pushinpay-reconcile] Falha ao registrar consulta do depósito.', paymentId, stampError.message);
@@ -83,45 +90,33 @@ serve(async (req) => {
           continue;
         }
 
-        let providerResponse: Response;
-        try {
-          providerResponse = await fetch(`${apiUrl}/api/transactions/${encodeURIComponent(payment.external_id)}`, {
-            headers: { Authorization: `Bearer ${pushinpayToken}`, Accept: 'application/json' },
-          });
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'network_error';
-          console.error('[pushinpay-reconcile] Erro de rede ao consultar a PushinPay.', paymentId, message);
-          results.push({ paymentId, outcome: 'error', detail: 'provider_network_error' });
+        const externalId = normalizeExternalId(payment.external_id);
+        if (!externalId) {
+          console.error('[pushinpay-reconcile] Depósito com identificador inválido.', paymentId);
+          results.push({ paymentId, outcome: 'error', detail: 'invalid_external_id' });
           continue;
         }
 
-        if (!providerResponse.ok) {
-          results.push({ paymentId, outcome: 'error', detail: `provider_http_${providerResponse.status}` });
+        const lookup = await fetchProviderTransaction(apiUrl, pushinpayToken, externalId);
+        if (!lookup.ok) {
+          console.error('[pushinpay-reconcile] Falha ao consultar a PushinPay.', paymentId, lookup.error);
+          results.push({ paymentId, outcome: 'error', detail: lookup.error });
           continue;
         }
 
-        let providerData: unknown;
-        try {
-          providerData = await providerResponse.json();
-        } catch {
-          results.push({ paymentId, outcome: 'error', detail: 'invalid_provider_json' });
-          continue;
-        }
-        if (!providerData || typeof providerData !== 'object' || Array.isArray(providerData)) {
-          results.push({ paymentId, outcome: 'error', detail: 'invalid_provider_response' });
-          continue;
-        }
-        const transaction = providerData as { status?: unknown; value?: unknown };
+        const outcome = providerOutcome(lookup.transaction.status);
 
-        if (transaction.status === 'paid') {
-          if (typeof transaction.value !== 'number' || !Number.isSafeInteger(transaction.value) || transaction.value < 0) {
+        if (outcome === 'paid') {
+          const amount = parseProviderAmount(lookup.transaction.value);
+          console.log('[pushinpay-reconcile] Valor informado pelo provedor.', paymentId, describeAmount(amount));
+          if (amount.cents === null) {
             results.push({ paymentId, outcome: 'error', detail: 'invalid_provider_value' });
             continue;
           }
           const { data, error } = await serviceClient.rpc('settle_deposit', {
-            p_provider: 'pushinpay',
+            p_provider: PROVIDER,
             p_external_id: payment.external_id,
-            p_amount_cents: transaction.value,
+            p_amount_cents: amount.cents,
             p_status: 'paid',
             p_paid_at: null,
             p_payload: { source: 'reconcile' },
@@ -135,9 +130,9 @@ serve(async (req) => {
           continue;
         }
 
-        if (transaction.status === 'canceled' || transaction.status === 'expired') {
+        if (outcome === 'canceled') {
           const { data, error } = await serviceClient.rpc('settle_deposit', {
-            p_provider: 'pushinpay',
+            p_provider: PROVIDER,
             p_external_id: payment.external_id,
             p_amount_cents: null,
             p_status: 'canceled',
