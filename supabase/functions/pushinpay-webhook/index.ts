@@ -1,6 +1,8 @@
 import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -36,13 +38,19 @@ serve(async (req) => {
     return jsonResponse({ error: 'Corpo do webhook inválido.' }, 400);
   }
   const eventPayload = Object.fromEntries(form.entries());
-  const id = form.get('id');
+  const rawId = form.get('id');
   const status = form.get('status');
-  if (!id || !status) {
+  if (!rawId || !status) {
     // O painel da PushinPay faz um POST de teste ao salvar o webhook, e também há
     // eventos que não são de cobrança (ex.: MED/infração). Apenas confirmamos o
     // recebimento para não gerar retentativas.
     console.log('[pushinpay-webhook] Evento não reconhecido, recebimento confirmado. Campos:', Object.keys(eventPayload).join(','));
+    return jsonResponse({ received: true, ignored: true });
+  }
+
+  const id = rawId.trim().toLowerCase();
+  if (!UUID_PATTERN.test(id)) {
+    console.log('[pushinpay-webhook] Identificador inválido ignorado.');
     return jsonResponse({ received: true, ignored: true });
   }
 
@@ -56,9 +64,9 @@ serve(async (req) => {
   // provedor — consultas agressivas podem bloquear a conta na PushinPay.
   const { data: knownPayment, error: knownPaymentError } = await serviceClient
     .from('payments')
-    .select('id')
+    .select('id, external_id')
     .eq('provider', 'pushinpay')
-    .eq('external_id', id)
+    .ilike('external_id', id)
     .maybeSingle();
   if (knownPaymentError) {
     console.error('[pushinpay-webhook] Falha ao verificar a cobrança.', knownPaymentError.message);
@@ -153,7 +161,7 @@ serve(async (req) => {
     // ela não permaneça "pendente" para sempre no histórico do usuário.
     const { error: cancelError } = await serviceClient.rpc('settle_deposit', {
       p_provider: 'pushinpay',
-      p_external_id: id,
+      p_external_id: knownPayment.external_id,
       p_amount_cents: null,
       p_status: 'canceled',
       p_paid_at: null,
@@ -173,7 +181,7 @@ serve(async (req) => {
 
   const { data: settlement, error: settlementError } = await serviceClient.rpc('settle_deposit', {
     p_provider: 'pushinpay',
-    p_external_id: id,
+    p_external_id: knownPayment.external_id,
     p_amount_cents: confirmedValue,
     p_status: 'paid',
     p_paid_at: null,
