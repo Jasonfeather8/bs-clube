@@ -1,0 +1,1 @@
+ALTER TABLE public.bet_attempts ENABLE ROW LEVEL SECURITY;

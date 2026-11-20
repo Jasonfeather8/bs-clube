@@ -1,0 +1,1 @@
+CREATE TRIGGER pools_sync_prize_estimate AFTER INSERT OR UPDATE ON public.pools FOR EACH ROW EXECUTE FUNCTION public.sync_pool_prize_estimate();

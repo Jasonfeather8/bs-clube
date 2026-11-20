@@ -1,0 +1,1 @@
+CREATE POLICY bet_attempts_select_own ON public.bet_attempts FOR SELECT TO authenticated USING (((auth.uid() = user_id) OR is_admin()));

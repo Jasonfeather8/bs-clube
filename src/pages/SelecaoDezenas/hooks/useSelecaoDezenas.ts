@@ -32,7 +32,8 @@ export function useSelecaoDezenas() {
   }, [pools, requestedPoolId, selectedPoolId]);
   const { data: bolao, isLoading: isBolaoLoading } = useBolaoDetails(activePoolId);
   const [isPixPending, setIsPixPending] = useState(draftIsPixPending);
-  const { data: walletBalance } = useWalletBalance({ refetchInterval: isPixPending ? 5000 : false });
+  const walletBalanceQuery = useWalletBalance({ refetchInterval: isPixPending ? 5000 : false });
+  const walletBalance = walletBalanceQuery.data;
   const placeBetsMutation = usePlaceBets();
   const depositMutation = useDeposit();
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>(draftSelectedNumbers);
@@ -237,9 +238,19 @@ export function useSelecaoDezenas() {
       },
     });
   };
-  const handlePayWithPix = () => {
+  const handlePayWithPix = async () => {
     setIsPaymentSheetOpen(false);
-    setDepositAmount(Math.max(5, totalPrice - effectiveBalance).toFixed(2));
+    // O saldo pode ainda não ter carregado (ou estar desatualizado no cache). Buscar
+    // o valor real antes de sugerir o depósito evita pedir o valor cheio de quem já
+    // tem saldo na conta.
+    let balance = effectiveBalance;
+    try {
+      const { data } = await walletBalanceQuery.refetch();
+      if (typeof data?.total === 'number' && Number.isFinite(data.total)) balance = data.total;
+    } catch {
+      // Se a consulta falhar, mantém o saldo já conhecido.
+    }
+    setDepositAmount(Math.max(5, totalPrice - balance).toFixed(2));
     setIsDepositModalOpen(true);
   };
   const closeAuthModal = useCallback(() => {
