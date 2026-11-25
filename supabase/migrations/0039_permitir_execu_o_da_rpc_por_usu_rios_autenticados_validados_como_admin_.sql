@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.get_admin_user_details(uuid) TO authenticated;

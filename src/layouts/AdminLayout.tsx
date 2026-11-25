@@ -8,6 +8,7 @@ import NewCategoryModal from '../pages/AdminDashboard/components/NewCategoryModa
 import RegisterResultModal from '../pages/AdminDashboard/components/RegisterResultModal';
 import AdminResultDetailModal from '../pages/AdminDashboard/components/AdminResultDetailModal';
 import AdminPoolDetailModal from '../pages/AdminDashboard/components/AdminPoolDetailModal';
+import AdminUserDetailModal from '../pages/AdminDashboard/components/AdminUserDetailModal';
 import AdminFeedbackModal from '../pages/AdminDashboard/components/AdminFeedbackModal';
 import PrizeSettingsModal from '../pages/AdminDashboard/components/PrizeSettingsModal';
 
@@ -18,9 +19,10 @@ function AdminLayoutInner() {
     isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen, editingCategory, setEditingCategory, resultCategory, setResultCategory,
     readOnlyResultCategory, setReadOnlyResultCategory, resultDetails, isResultDetailsLoading, resultDetailsError,
     poolDetailCategory, setPoolDetailCategory, poolDetail, isPoolDetailLoading, poolDetailError,
+    userDetail, setUserDetail, userDetails, isUserDetailsLoading, userDetailsError, isTogglingUserStatus,
     alertConfig, setAlertConfig, prizeSettings, pendingWithdrawals, isProcessingWithdrawal,
     isCreatingCategory, isUpdatingPrizeSettings, isRegisteringResult, handleApproveWithdrawal, handleRejectWithdrawal,
-    handleCreateCategory, handleUpdateCategory, handleUpdatePrizeSettings, handleRegisterResult,
+    handleCreateCategory, handleUpdateCategory, handleUpdatePrizeSettings, handleRegisterResult, handleToggleUser,
   } = useAdmin();
 
   const categoryModalSubmit = editingCategory ? handleUpdateCategory : handleCreateCategory;
@@ -80,6 +82,16 @@ function AdminLayoutInner() {
         isLoading={isPoolDetailLoading}
         error={poolDetailError}
         onClose={() => setPoolDetailCategory(null)}
+      />
+      <AdminUserDetailModal
+        isOpen={Boolean(userDetail)}
+        user={userDetail}
+        detail={userDetails}
+        isLoading={isUserDetailsLoading}
+        error={userDetailsError}
+        isTogglingStatus={isTogglingUserStatus}
+        onToggleStatus={handleToggleUser}
+        onClose={() => setUserDetail(null)}
       />
       <PrizeSettingsModal
         isOpen={isPrizeSettingsModalOpen}

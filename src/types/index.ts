@@ -349,6 +349,87 @@ export interface AdminPoolDetail {
   participants: AdminPoolParticipant[];
 }
 
+export interface AdminUserDetailProfile {
+  id: string;
+  fullName: string | null;
+  email: string;
+  phone: string | null;
+  cpf: string | null;
+  pixKeyType: string | null;
+  pixKey: string | null;
+  avatarUrl: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface AdminUserDetailWallet {
+  total: number;
+  withdrawable: number;
+  bonus: number;
+  createdAt?: string;
+}
+
+export interface AdminUserDetailStats {
+  betsCount: number;
+  totalWagered: number;
+  prizesCount: number;
+  prizesAmount: number;
+  withdrawalsCount: number;
+  withdrawalsPaid: number;
+  depositsTotal: number;
+}
+
+export interface AdminUserBet {
+  betId: string;
+  poolId: string;
+  poolName: string;
+  contest: string;
+  drawDate: string;
+  numbers: number[];
+  cotaPrice: number;
+  createdAt: string;
+  hits: number;
+  prizeAmount: number;
+  poolStatus: string;
+}
+
+export interface AdminUserPrize {
+  awardId: string;
+  poolName: string;
+  hits: number;
+  amount: number;
+  createdAt: string;
+}
+
+export interface AdminUserWithdrawal {
+  id: string;
+  amount: number;
+  pixKeyType: string;
+  pixKey: string;
+  status: string;
+  createdAt: string;
+  reviewedAt: string | null;
+}
+
+export interface AdminUserTransaction {
+  id: string;
+  entryType: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+  title: string;
+}
+
+export interface AdminUserDetail {
+  profile: AdminUserDetailProfile;
+  wallet: AdminUserDetailWallet;
+  stats: AdminUserDetailStats;
+  bets: AdminUserBet[];
+  prizes: AdminUserPrize[];
+  withdrawals: AdminUserWithdrawal[];
+  transactions: AdminUserTransaction[];
+}
+
 export interface PrizeAward {
   id: string;
   poolId: string;

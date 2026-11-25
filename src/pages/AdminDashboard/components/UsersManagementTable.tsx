@@ -14,6 +14,7 @@ interface UsersManagementTableProps {
   statusFilter: 'all' | 'active' | 'blocked';
   onStatusFilterChange: (status: 'all' | 'active' | 'blocked') => void;
   onToggleUserStatus: (id: number | string) => void;
+  onViewUser: (user: AdminUser) => void;
 }
 
 export default function UsersManagementTable({
@@ -28,6 +29,7 @@ export default function UsersManagementTable({
   statusFilter,
   onStatusFilterChange,
   onToggleUserStatus,
+  onViewUser,
 }: UsersManagementTableProps) {
   const formatCurrency = (val: number) =>
     `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -125,7 +127,20 @@ export default function UsersManagementTable({
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-800/40 transition">
+                  <tr
+                    key={u.id}
+                    onClick={() => onViewUser(u)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onViewUser(u);
+                      }
+                    }}
+                    tabIndex={0}
+                    title={`Ver detalhes de ${u.name}`}
+                    aria-label={`Ver detalhes de ${u.name}`}
+                    className="hover:bg-slate-800/40 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70"
+                  >
                     <td className="p-4 text-slate-500 font-mono text-[11px]">#{u.id}</td>
                     <td className="p-4 font-bold text-white flex items-center space-x-2.5">
                       <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-slate-400">
@@ -154,7 +169,7 @@ export default function UsersManagementTable({
                     <td className="p-4 text-center space-x-2">
                       <button
                         type="button"
-                        onClick={() => onToggleUserStatus(u.id)}
+                        onClick={(event) => { event.stopPropagation(); onToggleUserStatus(u.id); }}
                         className={`p-1.5 rounded-lg transition text-xs cursor-pointer ${
                           u.active
                             ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10'

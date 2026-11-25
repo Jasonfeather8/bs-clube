@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.get_admin_user_details(uuid) FROM PUBLIC;

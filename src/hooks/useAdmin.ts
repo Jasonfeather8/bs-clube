@@ -13,6 +13,7 @@ export const ADMIN_USERS_KEY = ['admin', 'users'];
 export const ADMIN_CATEGORIES_KEY = ['admin', 'categories'];
 export const ADMIN_RESULT_DETAILS_KEY = ['admin', 'result-details'];
 export const ADMIN_POOL_PARTICIPANTS_KEY = ['admin', 'pool-participants'];
+export const ADMIN_USER_DETAILS_KEY = ['admin', 'user-details'];
 export const ADMIN_PRIZE_SETTINGS_KEY = ['admin', 'prize-settings'];
 
 export function usePrizeSettings() {
@@ -104,6 +105,7 @@ export function useToggleUserStatus() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_USERS_KEY });
       queryClient.invalidateQueries({ queryKey: ADMIN_METRICS_KEY });
+      queryClient.invalidateQueries({ queryKey: ADMIN_USER_DETAILS_KEY });
     },
   });
 }
@@ -136,6 +138,17 @@ export function useAdminPoolParticipants(poolId?: string) {
     queryKey: [...ADMIN_POOL_PARTICIPANTS_KEY, poolId ?? null],
     queryFn: () => adminService.getPoolParticipants(poolId as string),
     enabled: Boolean(user) && role === 'admin' && Boolean(poolId),
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useAdminUserDetails(userId?: number | string) {
+  const { user, role } = useAuth();
+  const id = userId != null ? String(userId) : undefined;
+  return useQuery({
+    queryKey: [...ADMIN_USER_DETAILS_KEY, id ?? null],
+    queryFn: () => adminService.getUserDetails(id as string),
+    enabled: Boolean(user) && role === 'admin' && Boolean(id),
     staleTime: 1000 * 30,
   });
 }

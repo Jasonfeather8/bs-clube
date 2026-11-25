@@ -9,6 +9,7 @@ import {
   useAdminCategories,
   useAdminResultDetails,
   useAdminPoolParticipants,
+  useAdminUserDetails,
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
@@ -17,7 +18,7 @@ import {
   usePrizeSettings,
   useUpdatePrizeSettings,
 } from '../../../hooks/useAdmin';
-import { AdminCategory, AdminCategoryInput, AdminCategoryStatus, AdminWithdrawal, PrizeSettings, RegisterResultInput } from '../../../types';
+import { AdminCategory, AdminCategoryInput, AdminCategoryStatus, AdminUser, AdminWithdrawal, PrizeSettings, RegisterResultInput } from '../../../types';
 
 export function useAdminDashboardState() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -30,6 +31,7 @@ export function useAdminDashboardState() {
   const [resultCategory, setResultCategory] = useState<AdminCategory | null>(null);
   const [readOnlyResultCategory, setReadOnlyResultCategory] = useState<AdminCategory | null>(null);
   const [poolDetailCategory, setPoolDetailCategory] = useState<AdminCategory | null>(null);
+  const [userDetail, setUserDetail] = useState<AdminUser | null>(null);
   const [alertConfig, setAlertConfig] = useState<{ title: string; msg: string; icon: string } | null>(null);
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [userStatusFilter, setUserStatusFilter] = useState<'all' | 'active' | 'blocked'>('all');
@@ -47,6 +49,7 @@ export function useAdminDashboardState() {
   const { data: categoriesPage, isLoading: isCategoriesLoading } = useAdminCategories({ page: categoryPage, status: categoryStatusFilter, month: categoryMonthFilter });
   const { data: resultDetails, isLoading: isResultDetailsLoading, error: resultDetailsError } = useAdminResultDetails(readOnlyResultCategory?.poolId);
   const { data: poolDetail, isLoading: isPoolDetailLoading, error: poolDetailError } = useAdminPoolParticipants(poolDetailCategory?.poolId);
+  const { data: userDetails, isLoading: isUserDetailsLoading, error: userDetailsError } = useAdminUserDetails(userDetail?.id);
   const { data: prizeSettings } = usePrizeSettings();
   const categories = categoriesPage?.items ?? [];
   const categoryTotalPages = categoriesPage?.totalPages ?? 1;
@@ -171,6 +174,7 @@ export function useAdminDashboardState() {
     withdrawalModal, setWithdrawalModal, isCategoryModalOpen, setIsCategoryModalOpen, isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen, editingCategory, setEditingCategory,
     resultCategory, setResultCategory, readOnlyResultCategory, setReadOnlyResultCategory, resultDetails, isResultDetailsLoading, resultDetailsError, alertConfig, setAlertConfig, prizeSettings, userSearchTerm, setUserSearchTerm: handleUserSearchChange,
     poolDetailCategory, setPoolDetailCategory, poolDetail, isPoolDetailLoading, poolDetailError,
+    userDetail, setUserDetail, userDetails, isUserDetailsLoading, userDetailsError, isTogglingUserStatus: toggleUserStatusMutation.isPending,
     userStatusFilter, setUserStatusFilter: handleUserStatusFilterChange, page: userPage, totalPages, totalCount, setPage: setUserPage,
     categoryStatusFilter, setCategoryStatusFilter: handleCategoryStatusFilterChange, categoryMonthFilter, setCategoryMonthFilter: handleCategoryMonthFilterChange, categoryPage, categoryTotalPages, categoryTotalCount, setCategoryPage,
     metrics, isMetricsLoading, withdrawals, pendingWithdrawals, isWithdrawalsLoading, users, filteredUsers, isUsersLoading,

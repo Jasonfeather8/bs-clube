@@ -16,6 +16,7 @@ export default function AdminUsersPage() {
     totalCount,
     setPage,
     handleToggleUser,
+    setUserDetail,
   } = useAdmin();
 
   return (
@@ -32,6 +33,7 @@ export default function AdminUsersPage() {
         statusFilter={userStatusFilter}
         onStatusFilterChange={setUserStatusFilter}
         onToggleUserStatus={handleToggleUser}
+        onViewUser={(user) => setUserDetail(user)}
       />
     </div>
   );

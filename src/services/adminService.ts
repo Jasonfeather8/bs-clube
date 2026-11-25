@@ -17,6 +17,11 @@ import {
   AdminResultDetail,
   AdminPoolDetail,
   AdminPoolParticipant,
+  AdminUserDetail,
+  AdminUserBet,
+  AdminUserPrize,
+  AdminUserWithdrawal,
+  AdminUserTransaction,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -663,6 +668,92 @@ export const adminService = {
           createdAt: String(participant.created_at ?? ''),
           hits: Number(participant.hits ?? 0),
           prizeAmount: Number(participant.prize_amount ?? 0),
+        }),
+      ),
+    };
+  },
+
+  async getUserDetails(userId: number | string): Promise<AdminUserDetail> {
+    await requireAdmin();
+    const id = String(userId ?? '').trim();
+    if (!id) throw new Error('Apostador inválido para consultar os detalhes.');
+    const { data, error } = await supabase.rpc('get_admin_user_details', { p_user_id: id });
+    if (error) throw error;
+    const result = (data ?? {}) as Row;
+    const profile = (result.profile ?? {}) as Row;
+    const wallet = (result.wallet ?? {}) as Row;
+    const stats = (result.stats ?? {}) as Row;
+    return {
+      profile: {
+        id: String(profile.id ?? id),
+        fullName: profile.full_name ?? null,
+        email: String(profile.email ?? ''),
+        phone: profile.phone ?? null,
+        cpf: profile.cpf ?? null,
+        pixKeyType: profile.pix_key_type ?? null,
+        pixKey: profile.pix_key ?? null,
+        avatarUrl: profile.avatar_url ?? null,
+        isActive: profile.is_active !== false,
+        createdAt: String(profile.created_at ?? ''),
+      },
+      wallet: {
+        total: Number(wallet.total ?? 0),
+        withdrawable: Number(wallet.withdrawable ?? 0),
+        bonus: Number(wallet.bonus ?? 0),
+        createdAt: wallet.created_at ?? undefined,
+      },
+      stats: {
+        betsCount: Number(stats.bets_count ?? 0),
+        totalWagered: Number(stats.total_wagered ?? 0),
+        prizesCount: Number(stats.prizes_count ?? 0),
+        prizesAmount: Number(stats.prizes_amount ?? 0),
+        withdrawalsCount: Number(stats.withdrawals_count ?? 0),
+        withdrawalsPaid: Number(stats.withdrawals_paid ?? 0),
+        depositsTotal: Number(stats.deposits_total ?? 0),
+      },
+      bets: (Array.isArray(result.bets) ? result.bets : []).map(
+        (bet: Row): AdminUserBet => ({
+          betId: String(bet.bet_id ?? ''),
+          poolId: String(bet.pool_id ?? ''),
+          poolName: String(bet.pool_name ?? 'Bolão'),
+          contest: String(bet.contest ?? ''),
+          drawDate: String(bet.draw_date ?? ''),
+          numbers: Array.isArray(bet.numbers) ? bet.numbers.map(Number) : [],
+          cotaPrice: Number(bet.cota_price ?? 0),
+          createdAt: String(bet.created_at ?? ''),
+          hits: Number(bet.hits ?? 0),
+          prizeAmount: Number(bet.prize_amount ?? 0),
+          poolStatus: String(bet.pool_status ?? ''),
+        }),
+      ),
+      prizes: (Array.isArray(result.prizes) ? result.prizes : []).map(
+        (prize: Row): AdminUserPrize => ({
+          awardId: String(prize.award_id ?? ''),
+          poolName: String(prize.pool_name ?? 'Bolão'),
+          hits: Number(prize.hits ?? 0),
+          amount: Number(prize.amount ?? 0),
+          createdAt: String(prize.created_at ?? ''),
+        }),
+      ),
+      withdrawals: (Array.isArray(result.withdrawals) ? result.withdrawals : []).map(
+        (withdrawal: Row): AdminUserWithdrawal => ({
+          id: String(withdrawal.id ?? ''),
+          amount: Number(withdrawal.amount ?? 0),
+          pixKeyType: String(withdrawal.pix_key_type ?? ''),
+          pixKey: String(withdrawal.pix_key ?? ''),
+          status: String(withdrawal.status ?? 'pending'),
+          createdAt: String(withdrawal.created_at ?? ''),
+          reviewedAt: withdrawal.reviewed_at ?? null,
+        }),
+      ),
+      transactions: (Array.isArray(result.transactions) ? result.transactions : []).map(
+        (transaction: Row): AdminUserTransaction => ({
+          id: String(transaction.id ?? ''),
+          entryType: String(transaction.entry_type ?? ''),
+          amount: Number(transaction.amount ?? 0),
+          status: String(transaction.status ?? 'success'),
+          createdAt: String(transaction.created_at ?? ''),
+          title: String(transaction.title ?? 'Movimentação'),
         }),
       ),
     };
