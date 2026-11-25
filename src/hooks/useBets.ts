@@ -7,6 +7,7 @@ import { RANKINGS_QUERY_KEY } from './useRankings';
 
 export const BOLAO_DETAILS_KEY = ['bolao', 'details'];
 export const USER_BETS_KEY = ['bets', 'user'];
+export const OWN_BETS_KEY = ['bets', 'own'];
 
 export function useBolaoDetails(id?: string) {
   return useQuery({
@@ -27,6 +28,16 @@ export function useUserBets() {
   });
 }
 
+export function useOwnBets() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: [...OWN_BETS_KEY, user?.id ?? 'guest'],
+    queryFn: () => betsService.getOwnBets(),
+    enabled: Boolean(user),
+    staleTime: 1000 * 30,
+  });
+}
+
 export function usePlaceBets() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -35,6 +46,7 @@ export function usePlaceBets() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: BOLAO_DETAILS_KEY });
       queryClient.invalidateQueries({ queryKey: USER_BETS_KEY });
+      queryClient.invalidateQueries({ queryKey: OWN_BETS_KEY });
       queryClient.invalidateQueries({ queryKey: WALLET_BALANCE_KEY });
       queryClient.invalidateQueries({ queryKey: TRANSACTIONS_KEY });
       queryClient.invalidateQueries({ queryKey: GAMES_QUERY_KEY });

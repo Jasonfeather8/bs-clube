@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { BolaoDetails, UserBet } from '../types';
+import { BolaoDetails, OwnBet, UserBet } from '../types';
 
 type Row = Record<string, any>;
 
@@ -68,6 +68,28 @@ export const betsService = {
       .order('created_at', { ascending: false });
     if (error) throw error;
     return (data ?? []).map(mapBet);
+  },
+
+  async getOwnBets(): Promise<OwnBet[]> {
+    await currentUser();
+    const { data, error } = await supabase.rpc('get_own_bets');
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    return rows.map((row: Row): OwnBet => ({
+      betId: String(row.bet_id ?? ''),
+      poolId: String(row.pool_id ?? ''),
+      poolName: String(row.pool_name ?? 'Bolão'),
+      contest: String(row.contest ?? ''),
+      drawDate: String(row.draw_date ?? ''),
+      numbers: Array.isArray(row.numbers) ? row.numbers.map(Number) : [],
+      cotaPrice: Number(row.cota_price ?? 0),
+      createdAt: String(row.created_at ?? ''),
+      poolStatus: String(row.pool_status ?? ''),
+      isPublished: row.is_published === true,
+      officialNumbers: Array.isArray(row.official_numbers) ? row.official_numbers.map(Number) : [],
+      hits: Number(row.hits ?? 0),
+      prizeAmount: Number(row.prize_amount ?? 0),
+    }));
   },
 
   async getById(id: string): Promise<UserBet | null> {

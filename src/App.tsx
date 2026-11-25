@@ -9,6 +9,7 @@ import SelecaoDezenas from './pages/SelecaoDezenas';
 import Resultados from './pages/Resultados';
 import Carteira from './pages/Carteira';
 import Perfil from './pages/Perfil';
+import MeusJogos from './pages/MeusJogos';
 
 import AdminOverviewPage from './pages/AdminDashboard/pages/AdminOverviewPage';
 import AdminUsersPage from './pages/AdminDashboard/pages/AdminUsersPage';
@@ -30,6 +31,7 @@ export default function App() {
         <Route element={<RequireAuth />}>
           <Route path="/carteira" element={<Carteira />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/meus-jogos" element={<MeusJogos />} />
         </Route>
       </Route>
 

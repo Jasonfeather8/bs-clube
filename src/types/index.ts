@@ -100,6 +100,22 @@ export interface UserBet {
   cotaPrice: number;
 }
 
+export interface OwnBet {
+  betId: string;
+  poolId: string;
+  poolName: string;
+  contest: string;
+  drawDate: string;
+  numbers: number[];
+  cotaPrice: number;
+  createdAt: string;
+  poolStatus: string;
+  isPublished: boolean;
+  officialNumbers: number[];
+  hits: number;
+  prizeAmount: number;
+}
+
 export type PixKeyType = 'cpf' | 'email' | 'phone' | 'random';
 
 export interface UserProfile {

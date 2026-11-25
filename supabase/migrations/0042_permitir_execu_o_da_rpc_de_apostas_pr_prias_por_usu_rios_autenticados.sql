@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.get_own_bets() TO authenticated;

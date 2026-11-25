@@ -5,6 +5,7 @@ import { RESULTS_GAMES_QUERY_KEY } from './useGames';
 import { RANKINGS_QUERY_KEY } from './useRankings';
 import { WALLET_BALANCE_KEY } from './useWallet';
 import { PRIZE_AWARDS_QUERY_KEY } from './usePrizeAwards';
+import { OWN_BETS_KEY } from './useBets';
 import { AdminCategoryInput, AdminCategoryStatus, AdminUserStatus, PrizeSettings, RegisterResultInput } from '../types';
 
 export const ADMIN_METRICS_KEY = ['admin', 'metrics'];
@@ -224,6 +225,9 @@ export function useRegisterOfficialResult() {
       queryClient.invalidateQueries({ queryKey: WALLET_BALANCE_KEY });
       queryClient.invalidateQueries({ queryKey: ['wallet', 'transactions'] });
       queryClient.invalidateQueries({ queryKey: PRIZE_AWARDS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: OWN_BETS_KEY });
+      queryClient.invalidateQueries({ queryKey: ADMIN_USER_DETAILS_KEY });
+      queryClient.invalidateQueries({ queryKey: ADMIN_POOL_PARTICIPANTS_KEY });
     },
   });
 }

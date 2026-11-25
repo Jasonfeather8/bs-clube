@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.get_own_bets() FROM PUBLIC;
