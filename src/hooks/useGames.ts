@@ -4,6 +4,7 @@ import { Game } from '../types';
 
 export const GAMES_QUERY_KEY = ['games'];
 export const RESULTS_GAMES_QUERY_KEY = ['games', 'results'];
+export const RANKING_GAMES_QUERY_KEY = ['games', 'ranking'];
 
 export function useGames() {
   return useQuery({
@@ -17,6 +18,14 @@ export function useResultsGames() {
   return useQuery({
     queryKey: RESULTS_GAMES_QUERY_KEY,
     queryFn: () => gamesService.getResults(),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useRankingGames() {
+  return useQuery({
+    queryKey: RANKING_GAMES_QUERY_KEY,
+    queryFn: () => gamesService.getRankingGames(),
     staleTime: 1000 * 60 * 5,
   });
 }

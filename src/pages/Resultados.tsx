@@ -14,9 +14,9 @@ export default function Resultados() {
     setSelectedGameId,
     selectedDrawId,
     setSelectedDrawId,
-    activeDraw,
     ownPrizeAwards,
     ranking,
+    rankingOfficialNumbers,
     searchTerm,
     setSearchTerm,
     isGuestModalOpen,
@@ -26,6 +26,7 @@ export default function Resultados() {
     openLogin,
     isLoading,
   } = useResultadosRanking();
+  const activeDraw = draws.find((draw) => draw.id === (selectedDrawId || draws[0]?.id));
   const ownPrizeTotal = ownPrizeAwards.reduce((total, award) => total + award.amount, 0);
   const ownPrizeHits = [...new Set(ownPrizeAwards.map((award) => award.hits))].sort((a, b) => a - b);
 
@@ -55,7 +56,7 @@ export default function Resultados() {
             </div>
             {activeDraw && (
               <span className="text-[11px] text-slate-400">
-                Comparando com:{' '}
+                Sorteio selecionado:{' '}
                 <strong className="text-emerald-400">{activeDraw.concurso}</strong>
               </span>
             )}
@@ -79,7 +80,7 @@ export default function Resultados() {
             onSearchChange={(term) => setSearchTerm(term)}
           />
 
-          <RankingList ranking={ranking} officialNumbers={activeDraw?.dezenas ?? []} isLoading={isLoading} />
+          <RankingList ranking={ranking} officialNumbers={rankingOfficialNumbers} isLoading={isLoading} />
         </section>
       </main>
 

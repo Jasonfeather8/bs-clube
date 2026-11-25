@@ -14,21 +14,16 @@ function mapParticipant(row: Row): RankingParticipant {
     hits: Number(row.hits ?? 0),
     numbers: Array.isArray(row.numbers) ? row.numbers.map(Number) : [],
     prizeAmount: Number(row.prize_amount ?? 0),
+    officialNumbers: Array.isArray(row.official_numbers) ? row.official_numbers.map(Number) : [],
   };
 }
 
 export const rankingsService = {
-  async getAll(gameId?: string, drawId?: string): Promise<RankingParticipant[]> {
+  async getAll(poolId?: string): Promise<RankingParticipant[]> {
     const { data, error } = await supabase.rpc('get_pool_ranking', {
-      p_pool_id: gameId ?? null,
-      p_draw_id: drawId ?? null,
+      p_pool_id: poolId ?? null,
     });
     if (error) throw error;
     return (Array.isArray(data) ? data : []).map(mapParticipant);
-  },
-
-  async getById(id: string | number, drawId?: string): Promise<RankingParticipant | null> {
-    const participants = await this.getAll(undefined, drawId);
-    return participants.find((participant) => String(participant.id) === String(id)) ?? null;
   },
 };

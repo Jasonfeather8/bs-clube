@@ -41,6 +41,7 @@ export interface RankingParticipant {
   hits: number;
   numbers: number[];
   prizeAmount: number;
+  officialNumbers: number[];
 }
 
 export interface UserTransaction {

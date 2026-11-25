@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useWalletBalance } from '../../../hooks/useWallet';
 import { useDraws } from '../../../hooks/useDraws';
-import { useResultsGames } from '../../../hooks/useGames';
+import { useRankingGames } from '../../../hooks/useGames';
 import { useRankings } from '../../../hooks/useRankings';
 import { useOwnPrizeAwards } from '../../../hooks/usePrizeAwards';
-import { OfficialDraw, Game } from '../../../types';
+import { Game } from '../../../types';
 
 export function useResultadosRanking() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export function useResultadosRanking() {
   const authMode = session ? 'auth' as const : 'guest' as const;
 
   const { data: draws = [], isLoading: isLoadingDraws } = useDraws();
-  const { data: games = [], isLoading: isLoadingGames } = useResultsGames();
+  const { data: games = [], isLoading: isLoadingGames } = useRankingGames();
 
   const [selectedGameId, setSelectedGameId] = useState<string>('');
   const [selectedDrawId, setSelectedDrawId] = useState<string>('');
@@ -23,26 +23,18 @@ export function useResultadosRanking() {
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
 
   const rankingGameId = selectedGameId || games[0]?.id;
-  const selectedGame = games.find((game) => game.id === rankingGameId);
 
-  const activeDraw: OfficialDraw | null = useMemo(() => {
-    if (draws.length === 0) return null;
-    if (selectedDrawId) {
-      return draws.find((draw) => draw.id === selectedDrawId) || draws[0];
-    }
-    if (selectedGame?.concursoRef) {
-      return draws.find((draw) => draw.concurso === selectedGame.concursoRef) || draws[0];
-    }
-    return draws[0];
-  }, [draws, selectedDrawId, selectedGame]);
-
-  const { data: participants = [], isLoading: isLoadingParticipants } = useRankings(
-    rankingGameId,
-    activeDraw?.id,
-  );
+  // O ranking é sempre do próprio bolão selecionado (usa o sorteio vinculado a ele),
+  // e não do sorteio escolhido no carrossel de sorteios oficiais.
+  const { data: participants = [], isLoading: isLoadingParticipants } = useRankings(rankingGameId);
   const { data: ownPrizeAwards = [], isLoading: isLoadingPrizeAwards } = useOwnPrizeAwards(rankingGameId);
 
-  // Hits are calculated by the ranking RPC from the selected official draw.
+  const rankingOfficialNumbers = useMemo(
+    () => participants[0]?.officialNumbers ?? [],
+    [participants],
+  );
+
+  // Hits are calculated by the ranking RPC from the pool's own official draw.
   const ranking = useMemo(() => {
     if (!participants || participants.length === 0) return [];
 
@@ -77,10 +69,10 @@ export function useResultadosRanking() {
     setSelectedGameId,
     selectedDrawId,
     setSelectedDrawId,
-    activeDraw,
     activeGame,
     ownPrizeAwards,
     ranking,
+    rankingOfficialNumbers,
     searchTerm,
     setSearchTerm,
     isGuestModalOpen,

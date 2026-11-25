@@ -67,6 +67,17 @@ export const gamesService = {
     return (data ?? []).map(mapPool).filter((game) => game.isUnavailable);
   },
 
+  // Lista usada pelo ranking: inclui bolões em andamento (abertos) além dos encerrados/concluídos.
+  async getRankingGames(): Promise<Game[]> {
+    const { data, error } = await supabase
+      .from('pools')
+      .select(poolSelect)
+      .in('status', ['open', 'late_registration', 'closed', 'completed'])
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapPool);
+  },
+
   async getById(id: string): Promise<Game | null> {
     const { data, error } = await supabase.from('pools').select(poolSelect).eq('id', id).maybeSingle();
     if (error) throw error;

@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.get_pool_ranking(uuid) FROM PUBLIC;
