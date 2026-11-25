@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.get_public_rankings(uuid, uuid);

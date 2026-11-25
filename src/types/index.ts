@@ -39,6 +39,8 @@ export interface RankingParticipant {
   initials: string;
   isMe?: boolean;
   hits: number;
+  numbers: number[];
+  prizeAmount: number;
 }
 
 export interface UserTransaction {

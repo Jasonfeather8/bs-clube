@@ -79,7 +79,7 @@ export default function Resultados() {
             onSearchChange={(term) => setSearchTerm(term)}
           />
 
-          <RankingList ranking={ranking} isLoading={isLoading} />
+          <RankingList ranking={ranking} officialNumbers={activeDraw?.dezenas ?? []} isLoading={isLoading} />
         </section>
       </main>
 

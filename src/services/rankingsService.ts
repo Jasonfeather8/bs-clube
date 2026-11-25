@@ -12,12 +12,14 @@ function mapParticipant(row: Row): RankingParticipant {
     initials: row.initials ?? String(name).slice(0, 2).toUpperCase(),
     isMe: Boolean(row.is_me),
     hits: Number(row.hits ?? 0),
+    numbers: Array.isArray(row.numbers) ? row.numbers.map(Number) : [],
+    prizeAmount: Number(row.prize_amount ?? 0),
   };
 }
 
 export const rankingsService = {
   async getAll(gameId?: string, drawId?: string): Promise<RankingParticipant[]> {
-    const { data, error } = await supabase.rpc('get_public_rankings', {
+    const { data, error } = await supabase.rpc('get_pool_ranking', {
       p_pool_id: gameId ?? null,
       p_draw_id: drawId ?? null,
     });

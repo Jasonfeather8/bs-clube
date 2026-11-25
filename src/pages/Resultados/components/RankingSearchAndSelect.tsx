@@ -91,7 +91,7 @@ export default function RankingSearchAndSelect({
           type="text"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Procurar participante por nome..."
+          placeholder="Procurar participante..."
           className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-accent transition shadow-inner"
         />
         {searchTerm && (

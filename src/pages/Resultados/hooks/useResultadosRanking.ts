@@ -53,9 +53,8 @@ export function useResultadosRanking() {
     });
 
     if (searchTerm.trim() !== '') {
-      processed = processed.filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.trim().toLowerCase();
+      processed = processed.filter((p) => (p.isMe ? 'você' : p.name).toLowerCase().includes(term));
     }
     return processed;
   }, [participants, searchTerm]);

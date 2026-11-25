@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.get_pool_ranking(uuid, uuid) TO anon, authenticated;
