@@ -18,6 +18,7 @@ interface CategoriesManagementTableProps {
   onEditCategory: (category: AdminCategory) => void;
   onRegisterResult: (category: AdminCategory) => void;
   onViewResult: (category: AdminCategory) => void;
+  onViewDetails: (category: AdminCategory) => void;
   onToggleCategoryStatus: (category: AdminCategory) => void;
   onDeleteCategory: (category: AdminCategory) => void;
   isBusy?: boolean;
@@ -39,6 +40,7 @@ export default function CategoriesManagementTable({
   onEditCategory,
   onRegisterResult,
   onViewResult,
+  onViewDetails,
   onToggleCategoryStatus,
   onDeleteCategory,
   isBusy = false,
@@ -54,7 +56,7 @@ export default function CategoriesManagementTable({
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
         <div>
           <h4 className="font-heading font-bold text-white text-base">Bolões</h4>
-          <p className="text-xs text-slate-400">Gerencie os bolões disponíveis e registre seus resultados oficiais.</p>
+          <p className="text-xs text-slate-400">Gerencie os bolões disponíveis e registre seus resultados oficiais. Clique em um bolão para ver os apostadores.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <button type="button" onClick={onOpenPrizeSettings} className="border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 cursor-pointer">
@@ -94,19 +96,20 @@ export default function CategoriesManagementTable({
                 const completed = category.poolStatus === 'completed';
                 const closed = category.poolStatus === 'closed';
                 const inactive = category.poolStatus === 'inactive';
-                const openResult = () => onViewResult(category);
+                const openDetails = () => onViewDetails(category);
                 return <tr
                   key={category.id}
-                  className={`hover:bg-slate-800/40 transition ${completed ? 'cursor-pointer' : ''}`}
-                  onClick={completed ? openResult : undefined}
-                  onKeyDown={completed ? (event) => {
+                  className="hover:bg-slate-800/40 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70"
+                  onClick={openDetails}
+                  onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
-                      openResult();
+                      openDetails();
                     }
-                  } : undefined}
-                  tabIndex={completed ? 0 : undefined}
-                  aria-label={completed ? `Ver resultado de ${category.name}` : undefined}
+                  }}
+                  tabIndex={0}
+                  title={`Ver apostadores de ${category.name}`}
+                  aria-label={`Ver apostadores de ${category.name}`}
                 >
                   <td className="p-4 font-bold text-white"><div className="flex items-center space-x-2"><div className={`w-2 h-2 rounded-full ${completed ? 'bg-amber-400' : inactive ? 'bg-slate-500' : 'bg-emerald-400'}`}></div><span>{category.name}</span></div></td>
                   <td className="p-4 text-center text-slate-300 font-mono">#{category.concurso || '—'}</td>

@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.get_admin_pool_participants(uuid) FROM PUBLIC;

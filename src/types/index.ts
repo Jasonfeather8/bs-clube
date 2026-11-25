@@ -297,6 +297,58 @@ export interface AdminResultWinner {
   awardedAt: string;
 }
 
+export interface AdminPoolParticipant {
+  betId: string;
+  userId: string;
+  name: string;
+  email: string;
+  phone: string;
+  cpf: string;
+  numbers: number[];
+  cotaPrice: number;
+  createdAt: string;
+  hits: number;
+  prizeAmount: number;
+}
+
+export interface AdminPoolDetail {
+  pool: {
+    id: string;
+    name: string;
+    categoryName: string;
+    buyIn: number;
+    filledSlots: number;
+    totalSlots: number;
+    prizeEstimate: number;
+    housePercentage: number;
+    winnerPercentage: number;
+    status: string;
+    createdAt?: string;
+  };
+  draw: {
+    id: string;
+    contest: string;
+    drawDate: string;
+    numbers: number[];
+    isPublished: boolean;
+  } | null;
+  settlement: {
+    id: string;
+    grossAmount: number;
+    houseAmount: number;
+    winnersAmount: number;
+    winnerCount: number;
+    status: string;
+    createdAt?: string;
+  } | null;
+  totals: {
+    participantsCount: number;
+    betsCount: number;
+    grossAmount: number;
+  };
+  participants: AdminPoolParticipant[];
+}
+
 export interface PrizeAward {
   id: string;
   poolId: string;

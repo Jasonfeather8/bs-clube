@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.get_admin_pool_participants(uuid) TO authenticated;

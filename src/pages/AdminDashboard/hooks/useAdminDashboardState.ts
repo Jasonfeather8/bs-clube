@@ -8,6 +8,7 @@ import {
   useToggleUserStatus,
   useAdminCategories,
   useAdminResultDetails,
+  useAdminPoolParticipants,
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
@@ -28,6 +29,7 @@ export function useAdminDashboardState() {
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
   const [resultCategory, setResultCategory] = useState<AdminCategory | null>(null);
   const [readOnlyResultCategory, setReadOnlyResultCategory] = useState<AdminCategory | null>(null);
+  const [poolDetailCategory, setPoolDetailCategory] = useState<AdminCategory | null>(null);
   const [alertConfig, setAlertConfig] = useState<{ title: string; msg: string; icon: string } | null>(null);
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [userStatusFilter, setUserStatusFilter] = useState<'all' | 'active' | 'blocked'>('all');
@@ -44,6 +46,7 @@ export function useAdminDashboardState() {
   const totalCount = usersPage?.totalCount ?? 0;
   const { data: categoriesPage, isLoading: isCategoriesLoading } = useAdminCategories({ page: categoryPage, status: categoryStatusFilter, month: categoryMonthFilter });
   const { data: resultDetails, isLoading: isResultDetailsLoading, error: resultDetailsError } = useAdminResultDetails(readOnlyResultCategory?.poolId);
+  const { data: poolDetail, isLoading: isPoolDetailLoading, error: poolDetailError } = useAdminPoolParticipants(poolDetailCategory?.poolId);
   const { data: prizeSettings } = usePrizeSettings();
   const categories = categoriesPage?.items ?? [];
   const categoryTotalPages = categoriesPage?.totalPages ?? 1;
@@ -167,6 +170,7 @@ export function useAdminDashboardState() {
     isSidebarOpen, setIsSidebarOpen, isSidebarCollapsed, setIsSidebarCollapsed, activeView, setActiveView,
     withdrawalModal, setWithdrawalModal, isCategoryModalOpen, setIsCategoryModalOpen, isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen, editingCategory, setEditingCategory,
     resultCategory, setResultCategory, readOnlyResultCategory, setReadOnlyResultCategory, resultDetails, isResultDetailsLoading, resultDetailsError, alertConfig, setAlertConfig, prizeSettings, userSearchTerm, setUserSearchTerm: handleUserSearchChange,
+    poolDetailCategory, setPoolDetailCategory, poolDetail, isPoolDetailLoading, poolDetailError,
     userStatusFilter, setUserStatusFilter: handleUserStatusFilterChange, page: userPage, totalPages, totalCount, setPage: setUserPage,
     categoryStatusFilter, setCategoryStatusFilter: handleCategoryStatusFilterChange, categoryMonthFilter, setCategoryMonthFilter: handleCategoryMonthFilterChange, categoryPage, categoryTotalPages, categoryTotalCount, setCategoryPage,
     metrics, isMetricsLoading, withdrawals, pendingWithdrawals, isWithdrawalsLoading, users, filteredUsers, isUsersLoading,

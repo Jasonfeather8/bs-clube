@@ -15,6 +15,8 @@ import {
   RegisterResultInput,
   RegisterResultOutcome,
   AdminResultDetail,
+  AdminPoolDetail,
+  AdminPoolParticipant,
 } from '../types';
 
 type Row = Record<string, any>;
@@ -596,6 +598,73 @@ export const adminService = {
         playedAt: String(winner.played_at ?? ''),
         awardedAt: String(winner.awarded_at ?? ''),
       })),
+    };
+  },
+
+  async getPoolParticipants(poolId: string): Promise<AdminPoolDetail> {
+    await requireAdmin();
+    if (!poolId) throw new Error('Bolão inválido para consultar os apostadores.');
+    const { data, error } = await supabase.rpc('get_admin_pool_participants', { p_pool_id: poolId });
+    if (error) throw error;
+    const result = (data ?? {}) as Row;
+    const pool = (result.pool ?? {}) as Row;
+    const draw = result.draw ? (result.draw as Row) : null;
+    const settlement = result.settlement ? (result.settlement as Row) : null;
+    const totals = (result.totals ?? {}) as Row;
+    return {
+      pool: {
+        id: String(pool.id ?? poolId),
+        name: String(pool.name ?? ''),
+        categoryName: String(pool.category_name ?? ''),
+        buyIn: Number(pool.buy_in ?? 0),
+        filledSlots: Number(pool.filled_slots ?? 0),
+        totalSlots: Number(pool.total_slots ?? 0),
+        prizeEstimate: Number(pool.prize_estimate ?? 0),
+        housePercentage: Number(pool.house_percentage ?? 0),
+        winnerPercentage: Number(pool.winner_percentage ?? 0),
+        status: String(pool.status ?? ''),
+        createdAt: pool.created_at ?? undefined,
+      },
+      draw: draw
+        ? {
+            id: String(draw.id ?? ''),
+            contest: String(draw.contest ?? ''),
+            drawDate: String(draw.draw_date ?? ''),
+            numbers: Array.isArray(draw.numbers) ? draw.numbers.map(Number) : [],
+            isPublished: draw.is_published === true,
+          }
+        : null,
+      settlement: settlement
+        ? {
+            id: String(settlement.id ?? ''),
+            grossAmount: Number(settlement.gross_amount ?? 0),
+            houseAmount: Number(settlement.house_amount ?? 0),
+            winnersAmount: Number(settlement.winners_amount ?? 0),
+            winnerCount: Number(settlement.winner_count ?? 0),
+            status: String(settlement.status ?? ''),
+            createdAt: settlement.created_at ?? undefined,
+          }
+        : null,
+      totals: {
+        participantsCount: Number(totals.participants_count ?? 0),
+        betsCount: Number(totals.bets_count ?? 0),
+        grossAmount: Number(totals.gross_amount ?? 0),
+      },
+      participants: (Array.isArray(result.participants) ? result.participants : []).map(
+        (participant: Row): AdminPoolParticipant => ({
+          betId: String(participant.bet_id ?? ''),
+          userId: String(participant.user_id ?? ''),
+          name: String(participant.name ?? 'Apostador'),
+          email: String(participant.email ?? ''),
+          phone: String(participant.phone ?? ''),
+          cpf: String(participant.cpf ?? ''),
+          numbers: Array.isArray(participant.numbers) ? participant.numbers.map(Number) : [],
+          cotaPrice: Number(participant.cota_price ?? 0),
+          createdAt: String(participant.created_at ?? ''),
+          hits: Number(participant.hits ?? 0),
+          prizeAmount: Number(participant.prize_amount ?? 0),
+        }),
+      ),
     };
   },
 

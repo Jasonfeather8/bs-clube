@@ -23,6 +23,7 @@ export default function AdminCategoriesPage() {
     setEditingCategory,
     setResultCategory,
     setReadOnlyResultCategory,
+    setPoolDetailCategory,
   } = useAdmin();
 
   return (
@@ -43,6 +44,7 @@ export default function AdminCategoriesPage() {
         onEditCategory={(category) => { setEditingCategory(category); setIsCategoryModalOpen(true); }}
         onRegisterResult={(category) => setResultCategory(category)}
         onViewResult={(category) => setReadOnlyResultCategory(category)}
+        onViewDetails={(category) => setPoolDetailCategory(category)}
         onToggleCategoryStatus={handleToggleCategoryStatus}
         onDeleteCategory={handleDeleteCategory}
         isBusy={isDeletingCategory || isTogglingCategoryStatus}

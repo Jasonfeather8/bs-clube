@@ -12,6 +12,7 @@ export const ADMIN_WITHDRAWALS_KEY = ['admin', 'withdrawals'];
 export const ADMIN_USERS_KEY = ['admin', 'users'];
 export const ADMIN_CATEGORIES_KEY = ['admin', 'categories'];
 export const ADMIN_RESULT_DETAILS_KEY = ['admin', 'result-details'];
+export const ADMIN_POOL_PARTICIPANTS_KEY = ['admin', 'pool-participants'];
 export const ADMIN_PRIZE_SETTINGS_KEY = ['admin', 'prize-settings'];
 
 export function usePrizeSettings() {
@@ -124,6 +125,16 @@ export function useAdminResultDetails(poolId?: string) {
   return useQuery({
     queryKey: [...ADMIN_RESULT_DETAILS_KEY, poolId ?? null],
     queryFn: () => adminService.getAdminResultDetails(poolId as string),
+    enabled: Boolean(user) && role === 'admin' && Boolean(poolId),
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useAdminPoolParticipants(poolId?: string) {
+  const { user, role } = useAuth();
+  return useQuery({
+    queryKey: [...ADMIN_POOL_PARTICIPANTS_KEY, poolId ?? null],
+    queryFn: () => adminService.getPoolParticipants(poolId as string),
     enabled: Boolean(user) && role === 'admin' && Boolean(poolId),
     staleTime: 1000 * 30,
   });
