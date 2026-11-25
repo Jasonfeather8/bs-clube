@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useGames } from '../../../hooks/useGames';
 import { useBolaoDetails, usePlaceBets } from '../../../hooks/useBets';
+import { useRankings } from '../../../hooks/useRankings';
 import { useDeposit, useWalletBalance } from '../../../hooks/useWallet';
 import { useBetSelectionStore } from '../../../store/useBetSelectionStore';
 import { SavedBetItem } from '../components/SavedGamesList';
@@ -31,6 +32,8 @@ export function useSelecaoDezenas() {
     return pools[0]?.id;
   }, [pools, requestedPoolId, selectedPoolId]);
   const { data: bolao, isLoading: isBolaoLoading } = useBolaoDetails(activePoolId);
+  const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
+  const { data: participants = [], isLoading: isParticipantsLoading, isError: isParticipantsError } = useRankings(bolao?.id, { enabled: isParticipantsModalOpen });
   const [isPixPending, setIsPixPending] = useState(draftIsPixPending);
   const walletBalanceQuery = useWalletBalance({ refetchInterval: isPixPending ? 5000 : false });
   const walletBalance = walletBalanceQuery.data;
@@ -262,6 +265,10 @@ export function useSelecaoDezenas() {
     bolao, pools, isBolaoLoading: isPoolsLoading || isBolaoLoading, isPoolsLoading,
     isLoggedIn: Boolean(session), balanceTotal: effectiveBalance, selectedNumbers, savedGames, allFinalGames, totalGamesCount, totalPrice,
     isPaymentSheetOpen, setIsPaymentSheetOpen, isDepositModalOpen, setIsDepositModalOpen, isPixSheetOpen, setIsPixSheetOpen,
+    isParticipantsModalOpen,
+    openParticipants: () => setIsParticipantsModalOpen(true),
+    closeParticipants: () => setIsParticipantsModalOpen(false),
+    participants, isParticipantsLoading, isParticipantsError,
     depositAmount, setDepositAmount, pixTimer, pixCode, generatePixPayment, isDepositPending: depositMutation.isPending,
     isAuthModalOpen, closeAuthModal, toastMessage, setToastMessage, toggleNumber, clearCurrentSelection, generateSurpresinha,
     addSurpresinhasBulk, handleAddCurrentGame, handleRemoveGame, handleClearAllGames, handlePoolChange, handleConfirm,

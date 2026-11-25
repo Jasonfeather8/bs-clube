@@ -7,9 +7,10 @@ interface BolaoInfoCardProps {
   isLoading: boolean;
   isPoolsLoading: boolean;
   onPoolChange: (poolId: string) => void;
+  onOpenParticipants: () => void;
 }
 
-export default function BolaoInfoCard({ bolao, pools, isLoading, isPoolsLoading, onPoolChange }: BolaoInfoCardProps) {
+export default function BolaoInfoCard({ bolao, pools, isLoading, isPoolsLoading, onPoolChange, onOpenParticipants }: BolaoInfoCardProps) {
   if (isLoading) {
     return (
       <div className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-5 sm:p-6 animate-pulse space-y-4">
@@ -68,11 +69,24 @@ export default function BolaoInfoCard({ bolao, pools, isLoading, isPoolsLoading,
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-slate-800/60 pt-4 relative z-10">
-        <div className="flex items-center space-x-2 text-xs">
-          <i className="fa-solid fa-users text-emerald-500"></i>
-          <span className="text-slate-400 hidden sm:inline">Vagas Preenchidas:</span>
-          <span className="text-white font-bold">{vagas}/{vagasTotal} cotas</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/60 pt-4 relative z-10">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenParticipants}
+            disabled={!bolao}
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 px-3 py-1.5 text-xs font-bold text-emerald-400 transition hover:bg-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <i className="fa-solid fa-users" aria-hidden="true"></i>
+            <span>Participantes</span>
+            <span>(</span>
+            <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-mono text-emerald-300">{bolao?.vagasPreenchidas ?? 0}</span>
+            <span>)</span>
+          </button>
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-slate-400 hidden sm:inline">Vagas Preenchidas:</span>
+            <span className="text-white font-bold">{vagas}/{vagasTotal} cotas</span>
+          </div>
         </div>
         <span className="text-amber-500 text-[10px] font-bold uppercase tracking-wider flex items-center">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span> Mesa Aberta

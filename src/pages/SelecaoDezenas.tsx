@@ -6,6 +6,7 @@ import NumberGrid from './SelecaoDezenas/components/NumberGrid';
 import SavedGamesList from './SelecaoDezenas/components/SavedGamesList';
 import BottomConfirmationBar from './SelecaoDezenas/components/BottomConfirmationBar';
 import PaymentModal from './SelecaoDezenas/components/PaymentModal';
+import ParticipantsSheet from './SelecaoDezenas/components/ParticipantsSheet';
 import DepositModal from './Carteira/components/DepositModal';
 import PixPaymentSheet from './Carteira/components/PixPaymentSheet';
 
@@ -21,6 +22,12 @@ export default function SelecaoDezenas() {
     allFinalGames,
     totalGamesCount,
     totalPrice,
+    isParticipantsModalOpen,
+    openParticipants,
+    closeParticipants,
+    participants,
+    isParticipantsLoading,
+    isParticipantsError,
     isPaymentSheetOpen,
     setIsPaymentSheetOpen,
     isDepositModalOpen,
@@ -69,6 +76,7 @@ export default function SelecaoDezenas() {
           isLoading={isBolaoLoading}
           isPoolsLoading={isPoolsLoading}
           onPoolChange={handlePoolChange}
+          onOpenParticipants={openParticipants}
         />
 
         {/* Grade de Seleção de Números (1 a 60) */}
@@ -101,6 +109,17 @@ export default function SelecaoDezenas() {
         onConfirm={handleConfirm}
       />
 
+
+      <ParticipantsSheet
+        isOpen={isParticipantsModalOpen}
+        onClose={closeParticipants}
+        bolaoName={bolao?.nome ?? 'Bolão'}
+        vagasPreenchidas={bolao?.vagasPreenchidas ?? 0}
+        vagasTotal={bolao?.vagasTotal ?? 0}
+        participants={participants}
+        isLoading={isParticipantsLoading}
+        isError={isParticipantsError}
+      />
 
       {/* Sheet / Modal de Pagamento de Cotas */}
       <PaymentModal
