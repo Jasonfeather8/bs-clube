@@ -34,6 +34,18 @@ export default function OfficialDrawsCarousel({
     );
   }
 
+  if (draws.length === 0) {
+    return (
+      <div className="glass-card rounded-3xl border border-slate-800 p-8 text-center">
+        <i className="fa-regular fa-calendar-xmark text-2xl text-slate-500 mb-2"></i>
+        <p className="text-sm font-bold text-slate-300">Nenhum sorteio oficial publicado ainda</p>
+        <p className="text-xs text-slate-500 mt-1">
+          Os resultados oficiais aparecem aqui assim que forem publicados pela administração.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex space-x-4 overflow-x-auto hide-scrollbar pb-2 snap-x">
       {draws.map((draw) => {

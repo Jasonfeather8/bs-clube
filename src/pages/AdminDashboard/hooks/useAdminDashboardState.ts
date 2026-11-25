@@ -15,10 +15,11 @@ import {
   useDeleteCategory,
   useToggleCategoryStatus,
   useRegisterOfficialResult,
+  useExecuteManualDraw,
   usePrizeSettings,
   useUpdatePrizeSettings,
 } from '../../../hooks/useAdmin';
-import { AdminCategory, AdminCategoryInput, AdminCategoryStatus, AdminUser, AdminWithdrawal, PrizeSettings, RegisterResultInput } from '../../../types';
+import { AdminCategory, AdminCategoryInput, AdminCategoryStatus, AdminUser, AdminWithdrawal, ManualDrawInput, PrizeSettings, RegisterResultInput } from '../../../types';
 
 export function useAdminDashboardState() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -27,6 +28,7 @@ export function useAdminDashboardState() {
   const [withdrawalModal, setWithdrawalModal] = useState<AdminWithdrawal | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen] = useState(false);
+  const [isManualDrawModalOpen, setIsManualDrawModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
   const [resultCategory, setResultCategory] = useState<AdminCategory | null>(null);
   const [readOnlyResultCategory, setReadOnlyResultCategory] = useState<AdminCategory | null>(null);
@@ -71,6 +73,7 @@ export function useAdminDashboardState() {
   const deleteCategoryMutation = useDeleteCategory();
   const toggleCategoryStatusMutation = useToggleCategoryStatus();
   const registerResultMutation = useRegisterOfficialResult();
+  const executeManualDrawMutation = useExecuteManualDraw();
   const updatePrizeSettingsMutation = useUpdatePrizeSettings();
   const filteredUsers = users;
 
@@ -169,8 +172,19 @@ export function useAdminDashboardState() {
     }
   };
 
+  const handleExecuteManualDraw = async (data: ManualDrawInput) => {
+    try {
+      const outcome = await executeManualDrawMutation.mutateAsync(data);
+      setIsManualDrawModalOpen(false);
+      setAlertConfig({ title: 'Sorteio Publicado', msg: outcome.message, icon: 'fa-bullhorn text-emerald-400' });
+    } catch (err: any) {
+      setAlertConfig({ title: 'Erro no Sorteio', msg: err?.message || 'Falha ao publicar sorteio oficial.', icon: 'fa-triangle-exclamation text-rose-400' });
+    }
+  };
+
   return {
     isSidebarOpen, setIsSidebarOpen, isSidebarCollapsed, setIsSidebarCollapsed, activeView, setActiveView,
+    isManualDrawModalOpen, setIsManualDrawModalOpen, isExecutingManualDraw: executeManualDrawMutation.isPending, handleExecuteManualDraw,
     withdrawalModal, setWithdrawalModal, isCategoryModalOpen, setIsCategoryModalOpen, isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen, editingCategory, setEditingCategory,
     resultCategory, setResultCategory, readOnlyResultCategory, setReadOnlyResultCategory, resultDetails, isResultDetailsLoading, resultDetailsError, alertConfig, setAlertConfig, prizeSettings, userSearchTerm, setUserSearchTerm: handleUserSearchChange,
     poolDetailCategory, setPoolDetailCategory, poolDetail, isPoolDetailLoading, poolDetailError,

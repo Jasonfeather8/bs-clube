@@ -19,6 +19,12 @@ export default function RankingSearchAndSelect({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const selectedGame = games.find((g) => g.id === selectedGameId);
+  const hasGames = games.length > 0;
+  const selectorLabel = !hasGames
+    ? 'Nenhum bolão disponível'
+    : selectedGame
+      ? selectedGame.nome
+      : 'Selecione o Bolão';
 
   return (
     <div className="space-y-4">
@@ -33,12 +39,13 @@ export default function RankingSearchAndSelect({
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-3.5 py-2 flex items-center justify-between min-w-[220px] transition cursor-pointer"
+            disabled={!hasGames}
+            className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-3.5 py-2 flex items-center justify-between min-w-[220px] transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
           >
             <div className="flex items-center space-x-2">
               <i className="fa-solid fa-layer-group text-brand-gold text-xs"></i>
               <span className="text-xs font-bold text-brand-gold">
-                {selectedGame ? selectedGame.nome : 'Selecione o Bolão'}
+                {selectorLabel}
               </span>
             </div>
             <i
@@ -84,6 +91,16 @@ export default function RankingSearchAndSelect({
         </div>
       </div>
 
+      {!hasGames && (
+        <div
+          role="status"
+          className="flex items-center space-x-2 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-xs text-slate-400"
+        >
+          <i className="fa-regular fa-circle-question text-slate-500"></i>
+          <span>Nenhum bolão disponível. Assim que houver bolões cadastrados, eles aparecerão aqui.</span>
+        </div>
+      )}
+
       {/* Participant Search Input */}
       <div className="relative">
         <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
@@ -91,8 +108,9 @@ export default function RankingSearchAndSelect({
           type="text"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Procurar participante..."
-          className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-accent transition shadow-inner"
+          disabled={!hasGames}
+          placeholder={hasGames ? 'Procurar participante...' : 'Nenhum bolão disponível'}
+          className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-accent transition shadow-inner disabled:cursor-not-allowed disabled:opacity-60"
         />
         {searchTerm && (
           <button

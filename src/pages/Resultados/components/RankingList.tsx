@@ -5,6 +5,7 @@ interface RankingListProps {
   ranking: RankingParticipant[];
   officialNumbers?: number[];
   isLoading?: boolean;
+  searchTerm?: string;
 }
 
 function pad(number: number) {
@@ -15,7 +16,12 @@ function formatCurrency(value: number) {
   return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export default function RankingList({ ranking, officialNumbers = [], isLoading }: RankingListProps) {
+export default function RankingList({
+  ranking,
+  officialNumbers = [],
+  isLoading,
+  searchTerm = '',
+}: RankingListProps) {
   if (isLoading) {
     return (
       <div className="bg-slate-900/40 border border-slate-800/80 rounded-[2rem] p-4 sm:p-6 space-y-3 animate-pulse">
@@ -53,11 +59,27 @@ export default function RankingList({ ranking, officialNumbers = [], isLoading }
           <span>Dezenas apostadas por cada participante · destacadas em verde quando premiadas</span>
         </div>
       )}
+      {!hasOfficial && ranking.length > 0 && (
+        <div
+          role="status"
+          className="mx-2 sm:mx-4 mt-3 mb-1 flex items-center gap-2 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2.5 text-[11px] text-amber-200/90"
+        >
+          <i className="fa-regular fa-clock text-amber-400" aria-hidden="true"></i>
+          <span>Resultado oficial ainda não publicado · exibindo apenas as dezenas apostadas.</span>
+        </div>
+      )}
       <div className="space-y-2">
         {ranking.length === 0 ? (
-          <div className="p-8 text-center text-xs text-slate-500 space-y-2">
+          <div className="p-8 text-center text-xs text-slate-500 space-y-2" role="status">
             <i className="fa-solid fa-users-slash text-2xl text-slate-600 block"></i>
-            <span>Nenhum participante encontrado para este filtro.</span>
+            {searchTerm.trim() ? (
+              <span>Nenhum participante encontrado para esta busca.</span>
+            ) : (
+              <>
+                <span className="block font-bold text-slate-400">Este bolão ainda não possui apostadores</span>
+                <span className="block">Assim que alguém comprar uma cota, o nome aparece aqui.</span>
+              </>
+            )}
           </div>
         ) : (
           ranking.map((p, index) => {

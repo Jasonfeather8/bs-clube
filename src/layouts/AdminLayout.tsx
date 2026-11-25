@@ -11,6 +11,7 @@ import AdminPoolDetailModal from '../pages/AdminDashboard/components/AdminPoolDe
 import AdminUserDetailModal from '../pages/AdminDashboard/components/AdminUserDetailModal';
 import AdminFeedbackModal from '../pages/AdminDashboard/components/AdminFeedbackModal';
 import PrizeSettingsModal from '../pages/AdminDashboard/components/PrizeSettingsModal';
+import ManualDrawModal from '../pages/AdminDashboard/components/ManualDrawModal';
 
 function AdminLayoutInner() {
   const {
@@ -23,6 +24,7 @@ function AdminLayoutInner() {
     alertConfig, setAlertConfig, prizeSettings, pendingWithdrawals, isProcessingWithdrawal,
     isCreatingCategory, isUpdatingPrizeSettings, isRegisteringResult, handleApproveWithdrawal, handleRejectWithdrawal,
     handleCreateCategory, handleUpdateCategory, handleUpdatePrizeSettings, handleRegisterResult, handleToggleUser,
+    isManualDrawModalOpen, setIsManualDrawModalOpen, isExecutingManualDraw, handleExecuteManualDraw,
   } = useAdmin();
 
   const categoryModalSubmit = editingCategory ? handleUpdateCategory : handleCreateCategory;
@@ -99,6 +101,12 @@ function AdminLayoutInner() {
         onClose={() => setIsPrizeSettingsModalOpen(false)}
         onSubmit={handleUpdatePrizeSettings}
         isSubmitting={isUpdatingPrizeSettings}
+      />
+      <ManualDrawModal
+        isOpen={isManualDrawModalOpen}
+        onClose={() => setIsManualDrawModalOpen(false)}
+        onSubmit={handleExecuteManualDraw}
+        isExecuting={isExecutingManualDraw}
       />
       <AdminFeedbackModal config={alertConfig} onClose={() => setAlertConfig(null)} />
     </div>

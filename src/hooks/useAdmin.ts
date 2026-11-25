@@ -6,7 +6,7 @@ import { RANKINGS_QUERY_KEY } from './useRankings';
 import { WALLET_BALANCE_KEY } from './useWallet';
 import { PRIZE_AWARDS_QUERY_KEY } from './usePrizeAwards';
 import { OWN_BETS_KEY } from './useBets';
-import { AdminCategoryInput, AdminCategoryStatus, AdminUserStatus, PrizeSettings, RegisterResultInput } from '../types';
+import { AdminCategoryInput, AdminCategoryStatus, AdminUserStatus, ManualDrawInput, PrizeSettings, RegisterResultInput } from '../types';
 
 export const ADMIN_METRICS_KEY = ['admin', 'metrics'];
 export const ADMIN_WITHDRAWALS_KEY = ['admin', 'withdrawals'];
@@ -206,6 +206,21 @@ export function useToggleCategoryStatus() {
       queryClient.invalidateQueries({ queryKey: ['games'] });
       queryClient.invalidateQueries({ queryKey: RESULTS_GAMES_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['draws'] });
+    },
+  });
+}
+
+export function useExecuteManualDraw() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ManualDrawInput) => adminService.executeManualDraw(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['draws'] });
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+      queryClient.invalidateQueries({ queryKey: RANKINGS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ADMIN_USER_DETAILS_KEY });
+      queryClient.invalidateQueries({ queryKey: ADMIN_POOL_PARTICIPANTS_KEY });
+      queryClient.invalidateQueries({ queryKey: OWN_BETS_KEY });
     },
   });
 }

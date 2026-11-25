@@ -15,6 +15,7 @@ interface CategoriesManagementTableProps {
   isLoading: boolean;
   onOpenNewCategory: () => void;
   onOpenPrizeSettings: () => void;
+  onOpenManualDraw: () => void;
   onEditCategory: (category: AdminCategory) => void;
   onRegisterResult: (category: AdminCategory) => void;
   onViewResult: (category: AdminCategory) => void;
@@ -37,6 +38,7 @@ export default function CategoriesManagementTable({
   isLoading,
   onOpenNewCategory,
   onOpenPrizeSettings,
+  onOpenManualDraw,
   onEditCategory,
   onRegisterResult,
   onViewResult,
@@ -59,6 +61,9 @@ export default function CategoriesManagementTable({
           <p className="text-xs text-slate-400">Gerencie os bolões disponíveis e registre seus resultados oficiais. Clique em um bolão para ver os apostadores.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
+          <button type="button" onClick={onOpenManualDraw} className="border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 cursor-pointer">
+            <i className="fa-solid fa-bullhorn text-xs"></i><span>Registrar sorteio oficial</span>
+          </button>
           <button type="button" onClick={onOpenPrizeSettings} className="border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 cursor-pointer">
             <i className="fa-solid fa-sliders text-xs"></i><span>Configuração global</span>
           </button>

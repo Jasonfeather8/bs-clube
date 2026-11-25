@@ -80,7 +80,7 @@ export default function Resultados() {
             onSearchChange={(term) => setSearchTerm(term)}
           />
 
-          <RankingList ranking={ranking} officialNumbers={rankingOfficialNumbers} isLoading={isLoading} />
+          <RankingList ranking={ranking} officialNumbers={rankingOfficialNumbers} isLoading={isLoading} searchTerm={searchTerm} />
         </section>
       </main>
 

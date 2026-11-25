@@ -14,7 +14,7 @@ export default function ManualDrawModal({
   onSubmit,
   isExecuting,
 }: ManualDrawModalProps) {
-  const [concurso, setConcurso] = useState('2780');
+  const [concurso, setConcurso] = useState('');
   const [dataSorteio, setDataSorteio] = useState(
     new Date().toISOString().split('T')[0]
   );
@@ -85,10 +85,11 @@ export default function ManualDrawModal({
 
         <div className="mb-5 border-b border-slate-800 pb-4">
           <h3 className="font-heading text-xl font-bold text-white flex items-center text-amber-400">
-            <i className="fa-solid fa-bolt mr-2 text-lg"></i> Gatilho Manual de Apuração
+            <i className="fa-solid fa-bullhorn mr-2 text-lg"></i> Registrar Sorteio Oficial
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            Insira os resultados oficiais da Mega-Sena para apurar os bolões e creditar prêmios.
+            Publique as dezenas oficiais de um concurso para que apareçam em Sorteios Oficiais Caixa e
+            sejam consideradas nos bolões vinculados a ele.
           </p>
         </div>
 
@@ -158,8 +159,8 @@ export default function ManualDrawModal({
           <div className="bg-amber-500/10 p-3.5 rounded-xl border border-amber-500/20 text-[11px] text-amber-200/90 leading-relaxed flex items-start space-x-2">
             <i className="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5"></i>
             <span>
-              <strong>Atenção:</strong> A execução acionará imediatamente a distribuição de
-              prêmios nas carteiras e a apuração dos bolões vinculados a este concurso.
+              <strong>Atenção:</strong> publicar o sorteio não apura bolões nem distribui prêmios.
+              Para encerrar a apuração e creditar os prêmios, use a ação <strong>Registrar resultado</strong> no bolão.
             </span>
           </div>
 
@@ -171,12 +172,12 @@ export default function ManualDrawModal({
             {isExecuting ? (
               <>
                 <i className="fa-solid fa-circle-notch fa-spin"></i>
-                <span>Apurando e creditando...</span>
+                <span>Publicando...</span>
               </>
             ) : (
               <>
-                <i className="fa-solid fa-gears"></i>
-                <span>Executar Apuração Automática</span>
+                <i className="fa-solid fa-bullhorn"></i>
+                <span>Publicar Sorteio Oficial</span>
               </>
             )}
           </button>
