@@ -14,6 +14,7 @@ export default function Resultados() {
     setSelectedGameId,
     selectedDrawId,
     setSelectedDrawId,
+    activeGame,
     ownPrizeAwards,
     ranking,
     rankingOfficialNumbers,
@@ -80,7 +81,7 @@ export default function Resultados() {
             onSearchChange={(term) => setSearchTerm(term)}
           />
 
-          <RankingList ranking={ranking} officialNumbers={rankingOfficialNumbers} isLoading={isLoading} searchTerm={searchTerm} />
+          <RankingList ranking={ranking} officialNumbers={rankingOfficialNumbers} isLoading={isLoading} searchTerm={searchTerm} game={activeGame} />
         </section>
       </main>
 
