@@ -81,8 +81,21 @@ export default function PoolRankingTable({
           })}
         </div>
       </td>
-      <td className={`px-3 py-2 text-center font-mono font-bold whitespace-nowrap ${participant.hits > 0 ? 'text-emerald-400' : 'text-slate-500'}`}>
-        {participant.hits}
+      <td className={`px-3 py-2 text-center font-mono font-bold whitespace-nowrap ${participant.hits >= (participant.goal || 6) ? 'text-amber-300' : participant.hits > 0 ? 'text-emerald-400' : 'text-slate-500'}`}>
+        <div>{participant.hits}/{participant.goal || 6}</div>
+        <div
+          role="progressbar"
+          aria-label={`Progresso: ${participant.hits} de ${participant.goal || 6} acertos`}
+          aria-valuemin={0}
+          aria-valuemax={participant.goal || 6}
+          aria-valuenow={participant.hits}
+          className="mx-auto mt-1 h-1.5 w-14 overflow-hidden rounded-full bg-slate-800"
+        >
+          <div
+            className="h-full rounded-full bg-emerald-500"
+            style={{ width: `${Math.min((participant.hits / (participant.goal || 6)) * 100, 100)}%` }}
+          />
+        </div>
       </td>
       {showPrize && (
         <td className={`px-3 py-2 text-center font-bold whitespace-nowrap ${participant.prizeAmount > 0 ? 'text-amber-300' : 'text-slate-600'}`}>
@@ -151,7 +164,7 @@ export default function PoolRankingTable({
                         colSpan={showPrize ? 5 : 4}
                         className="bg-slate-800/80 px-3 py-1.5 text-left text-[11px] font-bold uppercase tracking-wide text-white"
                       >
-                        {group.participants.length} {group.participants.length === 1 ? 'aposta' : 'apostas'} com {group.hits} {group.hits === 1 ? 'acerto' : 'acertos'}
+                        {group.participants.length} {group.participants.length === 1 ? 'aposta' : 'apostas'} com {group.hits} de {group.participants[0]?.goal || 6} {group.hits === 1 ? 'acerto' : 'acertos'}
                       </th>
                     </tr>
                     {group.participants.map((participant) => renderParticipant(participant, ++ordinal))}

@@ -16,7 +16,7 @@ export default function DesktopGameTable({
 }: DesktopGameTableProps) {
   if (games.length === 0) {
     return (
-      <div className="hidden md:block py-16 text-center text-slate-500">
+      <div className="hidden md:block py-16 text-center text-slate-500" role="status">
         <i className="fa-solid fa-circle-exclamation text-3xl mb-3 block text-slate-600"></i>
         <p className="text-sm font-semibold text-slate-400">Nenhum bolão encontrado para este filtro.</p>
         <p className="text-xs text-slate-500 mt-1">Experimente alternar entre os filtros acima para ver outras opções disponíveis.</p>
@@ -128,22 +128,29 @@ export default function DesktopGameTable({
 
                 {/* Estado */}
                 <td className="py-4 px-4 whitespace-nowrap">
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center space-x-1.5 ${
-                      game.estado === 'Aberto'
-                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                        : game.estado === 'Reg. Tardio'
-                        ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                        : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
+                  <div>
                     <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        game.estado === 'Aberto' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center space-x-1.5 ${
+                        game.estado === 'Aberto'
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                          : game.estado === 'Reg. Tardio'
+                          ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                          : game.estado === 'Em Andamento'
+                          ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
+                          : game.estado === 'Concluído'
+                          ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                          : 'bg-slate-800 text-slate-400'
                       }`}
-                    ></span>
-                    <span>{game.estado}</span>
-                  </span>
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          game.estado === 'Aberto' ? 'bg-emerald-400 animate-pulse' : game.estado === 'Em Andamento' ? 'bg-sky-400' : game.estado === 'Concluído' ? 'bg-emerald-400' : 'bg-amber-400'
+                        }`}
+                      ></span>
+                      <span>{game.estado}</span>
+                    </span>
+                    {game.currentRound > 0 && <p className="mt-1 text-[10px] text-slate-500">Rodada {game.currentRound}/{game.maxRounds}</p>}
+                  </div>
                 </td>
 
                 {/* Inscritos */}
@@ -159,7 +166,14 @@ export default function DesktopGameTable({
                       </span>
                       <span className="text-[10px] text-slate-500">{percentFilled}%</span>
                     </div>
-                    <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"
+                      role="progressbar"
+                      aria-label={`Cotas preenchidas: ${game.inscritosAtuais} de ${game.inscritosMax}`}
+                      aria-valuemin={0}
+                      aria-valuemax={game.inscritosMax}
+                      aria-valuenow={game.inscritosAtuais}
+                    >
                       <div
                         className={`h-full rounded-full transition-all ${
                           isSubscribed ? 'bg-emerald-400' : 'bg-emerald-500'
@@ -167,6 +181,7 @@ export default function DesktopGameTable({
                         style={{ width: `${percentFilled}%` }}
                       ></div>
                     </div>
+                    {game.estado === 'Em Andamento' && <p className="text-[10px] text-slate-500">Vendas encerradas</p>}
                   </div>
                 </td>
 
@@ -178,6 +193,7 @@ export default function DesktopGameTable({
                       if (!game.isUnavailable) onPlayAction(game.id);
                       }}
                       disabled={game.isUnavailable}
+                      aria-label={`${game.isUnavailable ? 'Indisponível' : isSubscribed ? 'Ver jogo' : 'Participar'} do bolão ${game.nome}`}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition inline-flex items-center space-x-1.5 ${game.isUnavailable ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'cursor-pointer'} ${
                       isSubscribed
                         ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-950/50'

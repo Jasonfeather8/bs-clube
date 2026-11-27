@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { OfficialDraw } from '../types';
+import { OfficialDraw, PoolRound } from '../types';
 
 type DrawRow = Record<string, any>;
 
@@ -37,6 +37,20 @@ export const drawsService = {
     const { data, error } = await supabase.from('draws').select('*').eq('id', id).eq('is_published', true).maybeSingle();
     if (error) throw error;
     return data ? mapDraw(data) : null;
+  },
+
+  async getByPool(poolId: string): Promise<PoolRound[]> {
+    const { data, error } = await supabase.rpc('get_pool_rounds', { p_pool_id: poolId });
+    if (error) throw error;
+    return (Array.isArray(data) ? data : []).map((row: DrawRow) => ({
+      id: String(row.id),
+      roundNumber: Number(row.round_number ?? 0),
+      concurso: String(row.contest ?? ''),
+      data: String(row.draw_date ?? ''),
+      local: String(row.location ?? ''),
+      dezenas: Array.isArray(row.numbers) ? row.numbers.map(Number) : [],
+      publishedAt: String(row.published_at ?? ''),
+    }));
   },
 
   async getLatest(): Promise<OfficialDraw | null> {

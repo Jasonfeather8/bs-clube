@@ -1,0 +1,1 @@
+revoke all on function public.get_pool_rounds(uuid) from public;

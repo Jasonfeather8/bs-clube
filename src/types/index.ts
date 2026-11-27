@@ -5,7 +5,7 @@ export interface Game {
   premio: number;
   velocidade: string;
   tipo: string;
-  estado: 'Aberto' | 'Reg. Tardio' | 'Encerrado';
+  estado: 'Aberto' | 'Reg. Tardio' | 'Em Andamento' | 'Encerrado' | 'Concluído';
   inscritosAtuais: number;
   inscritosMax: number;
   categoria?: string;
@@ -17,6 +17,10 @@ export interface Game {
   quotaId?: string;
   isUnavailable?: boolean;
   createdAt?: string;
+  /** Rodadas já publicadas no bolão. */
+  currentRound: number;
+  /** Teto de rodadas do bolão. */
+  maxRounds: number;
 }
 
 // Alias for backward compatibility if needed
@@ -38,9 +42,15 @@ export interface RankingParticipant {
   name: string;
   initials: string;
   isMe?: boolean;
+  /** Acertos acumulados por dezenas distintas, de 0 até `goal`. */
   hits: number;
+  /** Meta de acertos do bolão (6). */
+  goal: number;
+  /** Rodadas já publicadas no bolão. */
+  roundsPublished: number;
   numbers: number[];
   prizeAmount: number;
+  /** União das dezenas distintas já sorteadas em todas as rodadas. */
   officialNumbers: number[];
 }
 
@@ -103,6 +113,15 @@ export interface UserBet {
   cotaPrice: number;
 }
 
+export interface OwnBetRound {
+  roundNumber: number;
+  concurso: string;
+  drawDate: string;
+  numbers: number[];
+  /** Acertos desta cota apenas nesta rodada. */
+  hits: number;
+}
+
 export interface OwnBet {
   betId: string;
   poolId: string;
@@ -114,9 +133,29 @@ export interface OwnBet {
   createdAt: string;
   poolStatus: string;
   isPublished: boolean;
+  /** União das dezenas distintas já sorteadas em todas as rodadas. */
   officialNumbers: number[];
+  /** Acertos acumulados por dezenas distintas, de 0 até `goal`. */
   hits: number;
+  /** Meta de acertos do bolão (6). */
+  goal: number;
+  /** Rodadas já publicadas no bolão. */
+  roundsPublished: number;
+  currentRound: number;
+  maxRounds: number;
+  /** Histórico de rodadas publicadas, com o desempenho desta cota em cada uma. */
+  rounds: OwnBetRound[];
   prizeAmount: number;
+}
+
+export interface PoolRound {
+  id: string;
+  roundNumber: number;
+  concurso: string;
+  data: string;
+  local: string;
+  dezenas: number[];
+  publishedAt: string;
 }
 
 export type PixKeyType = 'cpf' | 'email' | 'phone' | 'random';
@@ -435,7 +474,12 @@ export interface AdminUserBet {
   numbers: number[];
   cotaPrice: number;
   createdAt: string;
+  /** Acertos acumulados por dezenas distintas, de 0 até `goal`. */
   hits: number;
+  /** Meta de acertos do bolão (6). */
+  goal: number;
+  /** Rodadas já publicadas no bolão. */
+  roundsPublished: number;
   prizeAmount: number;
   poolStatus: string;
 }

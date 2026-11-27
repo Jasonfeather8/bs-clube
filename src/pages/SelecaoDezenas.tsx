@@ -26,6 +26,7 @@ export default function SelecaoDezenas() {
     openParticipants,
     closeParticipants,
     participants,
+    rankingOfficialNumbers,
     isParticipantsLoading,
     isParticipantsError,
     isPaymentSheetOpen,
@@ -117,6 +118,7 @@ export default function SelecaoDezenas() {
         vagasPreenchidas={bolao?.vagasPreenchidas ?? 0}
         vagasTotal={bolao?.vagasTotal ?? 0}
         participants={participants}
+        officialNumbers={rankingOfficialNumbers}
         isLoading={isParticipantsLoading}
         isError={isParticipantsError}
       />

@@ -1,22 +1,22 @@
 import React from 'react';
-import { OfficialDraw } from '../../../types';
+import { PoolRound } from '../../../types';
 
 interface OfficialDrawsCarouselProps {
-  draws: OfficialDraw[];
+  rounds: PoolRound[];
   activeDrawId: string;
   onSelectDraw: (drawId: string) => void;
   isLoading?: boolean;
 }
 
 export default function OfficialDrawsCarousel({
-  draws,
+  rounds,
   activeDrawId,
   onSelectDraw,
   isLoading,
 }: OfficialDrawsCarouselProps) {
   if (isLoading) {
     return (
-      <div className="flex space-x-4 overflow-x-auto hide-scrollbar pb-2 animate-pulse">
+      <div role="status" aria-label="Carregando rodadas do bolão" className="flex space-x-4 overflow-x-auto hide-scrollbar pb-2 animate-pulse">
         {[1, 2].map((i) => (
           <div
             key={i}
@@ -34,13 +34,13 @@ export default function OfficialDrawsCarousel({
     );
   }
 
-  if (draws.length === 0) {
+  if (rounds.length === 0) {
     return (
-      <div className="glass-card rounded-3xl border border-slate-800 p-8 text-center">
-        <i className="fa-regular fa-calendar-xmark text-2xl text-slate-500 mb-2"></i>
-        <p className="text-sm font-bold text-slate-300">Nenhum sorteio oficial publicado ainda</p>
+      <div role="status" className="glass-card rounded-3xl border border-slate-800 p-8 text-center">
+        <i className="fa-regular fa-calendar-xmark text-2xl text-slate-500 mb-2" aria-hidden="true"></i>
+        <p className="text-sm font-bold text-slate-300">Nenhuma rodada publicada ainda</p>
         <p className="text-xs text-slate-500 mt-1">
-          Os resultados oficiais aparecem aqui assim que forem publicados pela administração.
+          As rodadas aparecem aqui assim que o administrador publicar o primeiro concurso do bolão selecionado.
         </p>
       </div>
     );
@@ -48,13 +48,13 @@ export default function OfficialDrawsCarousel({
 
   return (
     <div className="flex space-x-4 overflow-x-auto hide-scrollbar pb-2 snap-x">
-      {draws.map((draw) => {
-        const isActive = activeDrawId === draw.id || (!activeDrawId && draws[0]?.id === draw.id);
+      {rounds.map((round) => {
+        const isActive = activeDrawId === round.id || (!activeDrawId && rounds[0]?.id === round.id);
 
         return (
           <div
-            key={draw.id}
-            onClick={() => onSelectDraw(draw.id)}
+            key={round.id}
+            onClick={() => onSelectDraw(round.id)}
             className={`min-w-[300px] p-5 rounded-3xl snap-center relative overflow-hidden cursor-pointer transition-all duration-300 ${
               isActive
                 ? 'glass-card border-emerald-500/40 shadow-lg shadow-emerald-950/30'
@@ -75,7 +75,10 @@ export default function OfficialDrawsCarousel({
                         : 'bg-slate-800 text-slate-400 border border-slate-700'
                     }`}
                   >
-                    {draw.concurso}
+                    {round.concurso}
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700">
+                    Rodada {round.roundNumber}
                   </span>
                   {isActive && (
                     <span className="text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-1.5 py-0.5 rounded">
@@ -85,17 +88,17 @@ export default function OfficialDrawsCarousel({
                 </div>
                 <div className="text-white font-bold text-sm">
                   <i className="fa-solid fa-calendar-day text-slate-400 mr-1.5"></i>
-                  {draw.data}
+                  {round.data}
                 </div>
               </div>
               <div className="text-right text-[10px] text-slate-400">
                 <i className="fa-solid fa-location-dot mr-1 text-red-400"></i>
-                {draw.local}
+                {round.local}
               </div>
             </div>
 
             <div className="flex justify-between items-center relative z-10">
-              {draw.dezenas.map((n) => (
+              {round.dezenas.map((n) => (
                 <div
                   key={n}
                   className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-md transition-transform ${

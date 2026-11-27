@@ -88,6 +88,19 @@ export const betsService = {
       isPublished: row.is_published === true,
       officialNumbers: Array.isArray(row.official_numbers) ? row.official_numbers.map(Number) : [],
       hits: Number(row.hits ?? 0),
+      goal: Number(row.goal ?? 6),
+      roundsPublished: Number(row.rounds_published ?? 0),
+      currentRound: Number(row.current_round ?? 0),
+      maxRounds: Number(row.max_rounds ?? 20),
+      rounds: Array.isArray(row.rounds)
+        ? row.rounds.map((round: Row) => ({
+            roundNumber: Number(round.round_number ?? 0),
+            concurso: String(round.contest ?? ''),
+            drawDate: String(round.draw_date ?? ''),
+            numbers: Array.isArray(round.numbers) ? round.numbers.map(Number) : [],
+            hits: Number(round.hits ?? 0),
+          }))
+        : [],
       prizeAmount: Number(row.prize_amount ?? 0),
     }));
   },

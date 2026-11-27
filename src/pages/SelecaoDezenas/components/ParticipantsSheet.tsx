@@ -9,6 +9,7 @@ interface ParticipantsSheetProps {
   vagasPreenchidas: number;
   vagasTotal: number;
   participants: RankingParticipant[];
+  officialNumbers?: number[];
   isLoading: boolean;
   isError?: boolean;
 }
@@ -20,6 +21,7 @@ export default function ParticipantsSheet({
   vagasPreenchidas,
   vagasTotal,
   participants,
+  officialNumbers = [],
   isLoading,
   isError = false,
 }: ParticipantsSheetProps) {
@@ -101,6 +103,7 @@ export default function ParticipantsSheet({
           ) : (
             <PoolRankingTable
               ranking={participants}
+              officialNumbers={officialNumbers}
               isLoading={isLoading}
               showPrize={false}
               ariaLabel="Participantes do bolão"

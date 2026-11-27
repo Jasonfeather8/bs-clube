@@ -11,7 +11,16 @@ function mapPool(row: PoolRow): Game {
   const draw = firstRelation(row.draws);
   const rawStatus = row.status as string;
   const isFull = Number(row.filled_slots ?? 0) >= Number(row.total_slots ?? 0);
+  // Um bolão cheio para de vender mesmo antes do trigger fechar as vagas.
   const status = isFull && (rawStatus === 'open' || rawStatus === 'late_registration') ? 'closed' : rawStatus;
+  const currentRound = Number(row.current_round ?? 0);
+  const estado = status === 'completed'
+    ? 'Concluído'
+    : status === 'closed'
+    ? currentRound > 0 ? 'Em Andamento' : 'Encerrado'
+    : status === 'late_registration'
+    ? 'Reg. Tardio'
+    : 'Aberto';
 
   return {
     id: String(row.id),
@@ -20,7 +29,7 @@ function mapPool(row: PoolRow): Game {
     premio: Number(row.prize_estimate ?? 0),
     velocidade: row.speed ?? '',
     tipo: row.game_type ?? '',
-    estado: status === 'late_registration' ? 'Reg. Tardio' : status === 'open' ? 'Aberto' : 'Encerrado',
+    estado,
     inscritosAtuais: Number(row.filled_slots ?? 0),
     inscritosMax: Number(row.total_slots ?? 0),
     categoria: category?.name ?? category?.slug,
@@ -31,6 +40,8 @@ function mapPool(row: PoolRow): Game {
     totalLotteryNumbers: Number(row.total_lottery_numbers ?? 60),
     quotaId: row.quota_id ? String(row.quota_id) : undefined,
     isUnavailable: isFull || status === 'closed' || status === 'completed',
+    currentRound,
+    maxRounds: Number(row.max_rounds ?? 20),
     createdAt: row.created_at,
   };
 }
@@ -94,7 +105,15 @@ export const gamesService = {
         prize_estimate: gameData.premio,
         speed: gameData.velocidade,
         game_type: gameData.tipo,
-        status: gameData.estado === 'Aberto' ? 'open' : gameData.estado === 'Reg. Tardio' ? 'late_registration' : 'closed',
+        status: gameData.estado === 'Aberto'
+          ? 'open'
+          : gameData.estado === 'Reg. Tardio'
+          ? 'late_registration'
+          : gameData.estado === 'Em Andamento'
+          ? 'closed'
+          : gameData.estado === 'Concluído'
+          ? 'completed'
+          : 'closed',
         filled_slots: gameData.inscritosAtuais,
         total_slots: gameData.inscritosMax,
         min_numbers: gameData.minNumbers ?? gameData.maxNumbers ?? 6,
@@ -122,7 +141,15 @@ export const gamesService = {
     if (updates.maxNumbers !== undefined) patch.max_numbers = updates.maxNumbers;
     if (updates.totalLotteryNumbers !== undefined) patch.total_lottery_numbers = updates.totalLotteryNumbers;
     if (updates.estado !== undefined) {
-      patch.status = updates.estado === 'Aberto' ? 'open' : updates.estado === 'Reg. Tardio' ? 'late_registration' : 'closed';
+      patch.status = updates.estado === 'Aberto'
+        ? 'open'
+        : updates.estado === 'Reg. Tardio'
+        ? 'late_registration'
+        : updates.estado === 'Em Andamento'
+        ? 'closed'
+        : updates.estado === 'Concluído'
+        ? 'completed'
+        : 'closed';
     }
     const { data, error } = await supabase.from('pools').update(patch).eq('id', id).select(poolSelect).single();
     if (error) throw error;

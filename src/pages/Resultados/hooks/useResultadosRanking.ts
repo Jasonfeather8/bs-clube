@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useWalletBalance } from '../../../hooks/useWallet';
-import { useDraws } from '../../../hooks/useDraws';
+import { usePoolRounds } from '../../../hooks/useDraws';
 import { useRankingGames } from '../../../hooks/useGames';
 import { useRankings } from '../../../hooks/useRankings';
 import { useOwnPrizeAwards } from '../../../hooks/usePrizeAwards';
@@ -14,7 +14,6 @@ export function useResultadosRanking() {
   const { data: walletBalance } = useWalletBalance();
   const authMode = session ? 'auth' as const : 'guest' as const;
 
-  const { data: draws = [], isLoading: isLoadingDraws } = useDraws();
   const { data: games = [], isLoading: isLoadingGames } = useRankingGames();
 
   const [selectedGameId, setSelectedGameId] = useState<string>('');
@@ -23,6 +22,10 @@ export function useResultadosRanking() {
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
 
   const rankingGameId = selectedGameId || games[0]?.id;
+  const { data: draws = [], isLoading: isLoadingDraws } = usePoolRounds(rankingGameId);
+  const effectiveSelectedDrawId = draws.some((draw) => draw.id === selectedDrawId)
+    ? selectedDrawId
+    : draws[0]?.id ?? '';
 
   // O ranking é sempre do próprio bolão selecionado (usa o sorteio vinculado a ele),
   // e não do sorteio escolhido no carrossel de sorteios oficiais.
@@ -67,7 +70,7 @@ export function useResultadosRanking() {
     games,
     selectedGameId: rankingGameId || '',
     setSelectedGameId,
-    selectedDrawId,
+    selectedDrawId: effectiveSelectedDrawId,
     setSelectedDrawId,
     activeGame,
     ownPrizeAwards,

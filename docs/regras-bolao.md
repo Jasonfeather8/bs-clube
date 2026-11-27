@@ -3,11 +3,12 @@
 Documento de referência das regras de negócio do bolão. Descreve **o modelo alvo** definido com o cliente.
 Leia antes de alterar qualquer coisa relacionada a bolão, rodada, ranking, apuração, prêmio ou datas.
 
-> **Status da implementação:** as regras abaixo são o **alvo**. O banco e a tela do admin já as implementam
-> (Etapa 1: tabela `pool_rounds`, RPC `publish_pool_round`, ranking e acertos acumulados. Etapa 2: publicação e
-> correção de rodadas pelo admin, histórico de rodadas no detalhe do bolão e as quatro datas separadas). Falta a
-> **Etapa 3**: as telas do apostador ainda não mostram o progresso até a meta. Não presuma que a interface
-> reflete este documento.
+> **Status da implementação:** as regras abaixo são o **alvo** e já estão implementadas de ponta a ponta.
+> Etapa 1 (banco): tabela `pool_rounds`, RPC `publish_pool_round`, ranking e acertos acumulados.
+> Etapa 2 (admin): publicação e correção de rodadas, histórico de rodadas no detalhe do bolão e as quatro datas
+> separadas. Etapa 3 (apostador): progresso até a meta em Meus Jogos, quebra por rodada no detalhe da aposta,
+> ranking acumulado em Resultados e no modal de Participantes, carrossel limitado às rodadas do bolão e
+> "Rodada X/20" na vitrine. Ao alterar qualquer uma dessas telas, mantenha a regra deste documento.
 
 ## Conceitos
 

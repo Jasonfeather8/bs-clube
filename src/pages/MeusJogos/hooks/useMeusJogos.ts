@@ -21,7 +21,7 @@ export function useMeusJogos() {
       case 'running':
         return bets.filter((bet) => bet.poolStatus !== 'completed');
       case 'result':
-        return bets.filter((bet) => bet.poolStatus === 'completed');
+        return bets.filter((bet) => bet.roundsPublished > 0);
       case 'prized':
         return bets.filter((bet) => bet.prizeAmount > 0);
       default:

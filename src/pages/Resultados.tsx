@@ -64,7 +64,7 @@ export default function Resultados() {
           </div>
 
           <OfficialDrawsCarousel
-            draws={draws}
+            rounds={draws}
             activeDrawId={selectedDrawId || draws[0]?.id}
             onSelectDraw={(id) => setSelectedDrawId(id)}
             isLoading={isLoading}

@@ -12,6 +12,8 @@ function mapParticipant(row: Row): RankingParticipant {
     initials: row.initials ?? String(name).slice(0, 2).toUpperCase(),
     isMe: Boolean(row.is_me),
     hits: Number(row.hits ?? 0),
+    goal: Number(row.goal ?? 6),
+    roundsPublished: Number(row.rounds_published ?? 0),
     numbers: Array.isArray(row.numbers) ? row.numbers.map(Number) : [],
     prizeAmount: Number(row.prize_amount ?? 0),
     officialNumbers: Array.isArray(row.official_numbers) ? row.official_numbers.map(Number) : [],

@@ -46,7 +46,6 @@ function statusBadge(status: string) {
 
 export default function BetCard({ bet, onOpen }: BetCardProps) {
   const status = statusBadge(bet.poolStatus);
-  const completed = bet.poolStatus === 'completed';
   const officialSet = new Set(bet.officialNumbers);
 
   return (
@@ -69,6 +68,7 @@ export default function BetCard({ bet, onOpen }: BetCardProps) {
           </div>
           <p className="text-[11px] text-slate-500 mt-1">
             Concurso #{bet.contest || '—'} · Sorteio {formatDate(bet.drawDate)}
+            {bet.roundsPublished > 0 && ` · Rodada ${bet.currentRound}/${bet.maxRounds}`}
           </p>
         </div>
         <div className="text-right shrink-0">
@@ -79,7 +79,7 @@ export default function BetCard({ bet, onOpen }: BetCardProps) {
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {bet.numbers.map((number) => {
-          const matched = completed && officialSet.has(number);
+          const matched = officialSet.has(number);
           return (
             <span
               key={number}
@@ -94,12 +94,24 @@ export default function BetCard({ bet, onOpen }: BetCardProps) {
       </div>
 
       <div className="mt-3 flex items-center justify-between gap-3 text-xs">
-        {completed ? (
-          <span className="text-slate-400">
-            Acertos: <strong className={bet.hits >= 4 ? 'text-amber-300' : 'text-slate-200'}>{bet.hits}</strong> de {bet.numbers.length}
-          </span>
+        {bet.roundsPublished > 0 ? (
+          <div className="w-full max-w-48">
+            <div className="flex justify-between text-slate-400">
+              <span>Acertos: <strong className={bet.hits >= bet.goal ? 'text-amber-300' : 'text-slate-200'}>{bet.hits}/{bet.goal}</strong></span>
+            </div>
+            <div
+              className="mt-1 bg-slate-800 h-1.5 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-label={`Progresso da aposta: ${bet.hits} de ${bet.goal} dezenas sorteadas`}
+              aria-valuemin={0}
+              aria-valuemax={bet.goal}
+              aria-valuenow={bet.hits}
+            >
+              <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${Math.min(100, (bet.hits / bet.goal) * 100)}%` }} />
+            </div>
+          </div>
         ) : (
-          <span className="text-slate-500 flex items-center gap-1.5">
+          <span className="text-slate-500 flex items-center gap-1.5" role="status">
             <i className="fa-regular fa-clock" aria-hidden="true"></i>Aguardando resultado oficial
           </span>
         )}

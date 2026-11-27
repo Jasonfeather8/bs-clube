@@ -34,6 +34,9 @@ export default function RankingList({
         ...(game.buyIn > 0
           ? [<span key="buy-in">Cota {formatCurrency(game.buyIn)}</span>]
           : []),
+        ...(game.currentRound > 0
+          ? [<span key="round">Rodada {game.currentRound} de {game.maxRounds}</span>]
+          : []),
       ]
     : [];
 
@@ -52,7 +55,7 @@ export default function RankingList({
       {hasOfficial && (
         <div className="px-3 sm:px-4 pt-3 pb-2 flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-wider">
           <i className="fa-solid fa-circle-info text-emerald-500/70" aria-hidden="true"></i>
-          <span>Dezenas apostadas por cada participante · destacadas em verde quando premiadas</span>
+          <span>Dezenas apostadas por cada participante · em verde, as que já saíram em alguma rodada · a meta é completar as 6</span>
         </div>
       )}
       {!hasOfficial && ranking.length > 0 && (
@@ -61,7 +64,7 @@ export default function RankingList({
           className="mx-2 sm:mx-4 mt-3 mb-1 flex items-center gap-2 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2.5 text-[11px] text-amber-200/90"
         >
           <i className="fa-regular fa-clock text-amber-400" aria-hidden="true"></i>
-          <span>Resultado oficial ainda não publicado · exibindo apenas as dezenas apostadas.</span>
+          <span>Nenhuma rodada publicada ainda · exibindo apenas as dezenas apostadas.</span>
         </div>
       )}
       <PoolRankingTable

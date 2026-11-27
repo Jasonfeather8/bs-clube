@@ -257,8 +257,8 @@ export default function AdminUserDetailModal({
                               <td className="p-4 text-right text-slate-300 font-mono text-xs">{formatCurrency(bet.cotaPrice)}</td>
                               <td className="p-4 text-center text-slate-400 text-xs font-mono">{formatDateTime(bet.createdAt)}</td>
                               <td className="p-4 text-center">
-                                {bet.poolStatus === 'completed' ? (
-                                  <span className={`text-xs font-bold ${bet.hits >= 4 ? 'text-amber-300' : 'text-slate-400'}`}>{bet.hits}</span>
+                                {bet.roundsPublished > 0 ? (
+                                  <span className={`text-xs font-bold ${bet.hits >= bet.goal ? 'text-amber-300' : 'text-slate-400'}`}>{bet.hits}/{bet.goal}</span>
                                 ) : (
                                   <span className="text-slate-600 text-xs">—</span>
                                 )}

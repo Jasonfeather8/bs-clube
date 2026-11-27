@@ -746,6 +746,8 @@ export const adminService = {
           cotaPrice: Number(bet.cota_price ?? 0),
           createdAt: String(bet.created_at ?? ''),
           hits: Number(bet.hits ?? 0),
+          goal: Number(bet.goal ?? 6),
+          roundsPublished: Number(bet.rounds_published ?? 0),
           prizeAmount: Number(bet.prize_amount ?? 0),
           poolStatus: String(bet.pool_status ?? ''),
         }),

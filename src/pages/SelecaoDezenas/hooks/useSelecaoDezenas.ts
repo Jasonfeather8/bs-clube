@@ -34,6 +34,10 @@ export function useSelecaoDezenas() {
   const { data: bolao, isLoading: isBolaoLoading } = useBolaoDetails(activePoolId);
   const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
   const { data: participants = [], isLoading: isParticipantsLoading, isError: isParticipantsError } = useRankings(bolao?.id, { enabled: isParticipantsModalOpen });
+  const rankingOfficialNumbers = useMemo(
+    () => participants[0]?.officialNumbers ?? [],
+    [participants],
+  );
   const [isPixPending, setIsPixPending] = useState(draftIsPixPending);
   const walletBalanceQuery = useWalletBalance({ refetchInterval: isPixPending ? 5000 : false });
   const walletBalance = walletBalanceQuery.data;
@@ -268,7 +272,7 @@ export function useSelecaoDezenas() {
     isParticipantsModalOpen,
     openParticipants: () => setIsParticipantsModalOpen(true),
     closeParticipants: () => setIsParticipantsModalOpen(false),
-    participants, isParticipantsLoading, isParticipantsError,
+    participants, rankingOfficialNumbers, isParticipantsLoading, isParticipantsError,
     depositAmount, setDepositAmount, pixTimer, pixCode, generatePixPayment, isDepositPending: depositMutation.isPending,
     isAuthModalOpen, closeAuthModal, toastMessage, setToastMessage, toggleNumber, clearCurrentSelection, generateSurpresinha,
     addSurpresinhasBulk, handleAddCurrentGame, handleRemoveGame, handleClearAllGames, handlePoolChange, handleConfirm,

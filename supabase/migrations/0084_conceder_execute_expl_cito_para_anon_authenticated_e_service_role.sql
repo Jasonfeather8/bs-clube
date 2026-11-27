@@ -1,0 +1,1 @@
+grant execute on function public.get_pool_rounds(uuid) to anon, authenticated, service_role;

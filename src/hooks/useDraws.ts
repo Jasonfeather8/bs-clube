@@ -11,6 +11,15 @@ export function useDraws() {
   });
 }
 
+export function usePoolRounds(poolId?: string) {
+  return useQuery({
+    queryKey: [...DRAWS_QUERY_KEY, 'pool', poolId ?? 'none'],
+    queryFn: () => drawsService.getByPool(poolId as string),
+    enabled: Boolean(poolId),
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
 export function useLatestDraw() {
   return useQuery({
     queryKey: [...DRAWS_QUERY_KEY, 'latest'],
