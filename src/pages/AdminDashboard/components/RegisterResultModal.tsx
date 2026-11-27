@@ -81,7 +81,8 @@ export default function RegisterResultModal({ isOpen, category, onClose, onSubmi
             </div>
           </div>
           <div className="bg-amber-500/10 p-3.5 rounded-xl border border-amber-500/20 text-[11px] text-amber-200/90 leading-relaxed">
-            Publicar o resultado encerra este bolão como concluído e disponibiliza o ranking e o resultado para os usuários.
+            As dezenas informadas passam a valer para esta rodada do bolão. O bolão só é encerrado quando alguma cota
+            completar os 6 acertos acumulados; até lá ele segue em andamento e recebe novas rodadas.
           </div>
           <button type="submit" disabled={isSubmitting} className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition flex items-center justify-center space-x-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-amber-900/30">
             {isSubmitting ? <><i className="fa-solid fa-circle-notch fa-spin"></i><span>Publicando...</span></> : <><i className="fa-solid fa-check"></i><span>Publicar resultado</span></>}

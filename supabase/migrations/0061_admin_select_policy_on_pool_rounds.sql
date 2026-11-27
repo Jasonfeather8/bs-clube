@@ -1,0 +1,1 @@
+CREATE POLICY "pool_rounds_admin_select" ON public.pool_rounds AS PERMISSIVE FOR SELECT TO authenticated USING (is_admin())

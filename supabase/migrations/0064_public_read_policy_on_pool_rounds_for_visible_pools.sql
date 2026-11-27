@@ -1,0 +1,1 @@
+CREATE POLICY "pool_rounds_public_select" ON public.pool_rounds AS PERMISSIVE FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.pools p WHERE p.id = pool_rounds.pool_id AND p.status = ANY (ARRAY['open','late_registration','closed','completed'])))

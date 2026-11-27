@@ -1,0 +1,1 @@
+CREATE POLICY "pool_rounds_admin_insert" ON public.pool_rounds AS PERMISSIVE FOR INSERT TO authenticated WITH CHECK (is_admin())

@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.publish_pool_round(uuid, text, date, integer[], uuid) FROM PUBLIC, anon

@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.publish_pool_round(uuid, text, date, integer[], uuid) TO authenticated, service_role

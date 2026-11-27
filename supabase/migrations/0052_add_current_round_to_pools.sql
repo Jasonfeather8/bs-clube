@@ -1,0 +1,1 @@
+ALTER TABLE public.pools ADD COLUMN IF NOT EXISTS current_round integer NOT NULL DEFAULT 0

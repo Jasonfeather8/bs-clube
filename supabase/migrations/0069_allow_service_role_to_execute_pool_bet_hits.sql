@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.pool_bet_hits(uuid) TO service_role

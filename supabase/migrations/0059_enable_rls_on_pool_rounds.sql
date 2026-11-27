@@ -1,0 +1,1 @@
+ALTER TABLE public.pool_rounds ENABLE ROW LEVEL SECURITY

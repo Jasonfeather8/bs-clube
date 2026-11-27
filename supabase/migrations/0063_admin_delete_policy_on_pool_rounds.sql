@@ -1,0 +1,1 @@
+CREATE POLICY "pool_rounds_admin_delete" ON public.pool_rounds AS PERMISSIVE FOR DELETE TO authenticated USING (is_admin())

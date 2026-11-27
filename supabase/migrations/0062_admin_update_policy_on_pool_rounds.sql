@@ -1,0 +1,1 @@
+CREATE POLICY "pool_rounds_admin_update" ON public.pool_rounds AS PERMISSIVE FOR UPDATE TO authenticated USING (is_admin()) WITH CHECK (is_admin())

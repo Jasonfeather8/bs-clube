@@ -1,0 +1,1 @@
+ALTER TABLE public.prize_awards DROP CONSTRAINT prize_awards_hits_check

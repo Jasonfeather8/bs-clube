@@ -1,0 +1,1 @@
+ALTER TABLE public.pools ADD CONSTRAINT pools_max_rounds_check CHECK (max_rounds > 0 AND max_rounds <= 200)

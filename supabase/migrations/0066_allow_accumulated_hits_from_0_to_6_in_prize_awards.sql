@@ -1,0 +1,1 @@
+ALTER TABLE public.prize_awards ADD CONSTRAINT prize_awards_hits_check CHECK (hits >= 0 AND hits <= 6)

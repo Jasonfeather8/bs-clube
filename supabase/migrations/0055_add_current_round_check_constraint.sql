@@ -1,0 +1,1 @@
+ALTER TABLE public.pools ADD CONSTRAINT pools_current_round_check CHECK (current_round >= 0 AND current_round <= max_rounds)

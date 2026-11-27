@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.pool_bet_hits(uuid) FROM PUBLIC, anon, authenticated

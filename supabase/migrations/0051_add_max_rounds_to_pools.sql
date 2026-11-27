@@ -1,0 +1,1 @@
+ALTER TABLE public.pools ADD COLUMN IF NOT EXISTS max_rounds integer NOT NULL DEFAULT 20

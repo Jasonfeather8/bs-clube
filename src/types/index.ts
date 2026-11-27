@@ -265,6 +265,12 @@ export interface RegisterResultOutcome {
   house: number;
   winners: number;
   winnerCount: number;
+  /** Indica se o bolão foi apurado e encerrado nesta rodada. */
+  settled: boolean;
+  /** Rodada publicada e resultado da apuração, já em pt-BR. */
+  message: string;
+  roundNumber: number;
+  maxHits: number;
   category: AdminCategory;
 }
 

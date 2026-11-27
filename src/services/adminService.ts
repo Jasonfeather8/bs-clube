@@ -786,6 +786,10 @@ export const adminService = {
       house: Number(outcome.house_amount ?? 0),
       winners: Number(outcome.winners_amount ?? 0),
       winnerCount: Number(outcome.winner_count ?? 0),
+      settled: outcome.settled === true,
+      message: String(outcome.message ?? ''),
+      roundNumber: Number(outcome.round_number ?? 0),
+      maxHits: Number(outcome.max_hits ?? 0),
       category,
     };
   },

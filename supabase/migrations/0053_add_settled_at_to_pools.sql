@@ -1,0 +1,1 @@
+ALTER TABLE public.pools ADD COLUMN IF NOT EXISTS settled_at timestamp with time zone

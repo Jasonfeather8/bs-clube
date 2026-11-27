@@ -3,9 +3,11 @@
 Documento de referência das regras de negócio do bolão. Descreve **o modelo alvo** definido com o cliente.
 Leia antes de alterar qualquer coisa relacionada a bolão, rodada, ranking, apuração, prêmio ou datas.
 
-> **Status da implementação:** as regras abaixo são o **alvo**. Até a Etapa 1 (banco) ser concluída, o sistema
-> ainda opera no modelo antigo: **um único concurso por bolão** e pagamento para quem acerta **4 ou mais** dezenas.
-> Não presuma que o código já implementa este documento.
+> **Status da implementação:** as regras abaixo são o **alvo**. A camada de banco já as implementa (Etapa 1
+> concluída: tabela `pool_rounds`, RPC `publish_pool_round`, ranking e acertos acumulados). A **interface ainda
+> não expõe as rodadas**: publicar a rodada 1 já funciona pela tela atual do admin, mas ainda não existe botão
+> para publicar a rodada 2 (Etapa 2), e as telas do apostador ainda não mostram o progresso até a meta (Etapa 3).
+> Não presuma que a interface reflete este documento.
 
 ## Conceitos
 

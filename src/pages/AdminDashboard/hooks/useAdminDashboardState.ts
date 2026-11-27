@@ -166,7 +166,11 @@ export function useAdminDashboardState() {
     try {
       const outcome = await registerResultMutation.mutateAsync(data);
       setResultCategory(null);
-      setAlertConfig({ title: 'Resultado Publicado', msg: `${outcome.winnerCount} ganhador(es) · R$ ${outcome.winners.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} distribuídos. O bolão foi encerrado.`, icon: 'fa-trophy text-amber-400' });
+      setAlertConfig(
+        outcome.settled
+          ? { title: 'Bolão Apurado', msg: outcome.message, icon: 'fa-trophy text-amber-400' }
+          : { title: 'Rodada Publicada', msg: outcome.message, icon: 'fa-bullhorn text-emerald-400' },
+      );
     } catch (err: any) {
       setAlertConfig({ title: 'Erro no Resultado', msg: err?.message || 'Falha ao registrar resultado.', icon: 'fa-triangle-exclamation text-rose-400' });
     }
