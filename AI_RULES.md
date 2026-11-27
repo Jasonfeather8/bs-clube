@@ -35,6 +35,14 @@
 - Use **Google GenAI** only through a dedicated service or server-side boundary. Read credentials from environment configuration, never hard-code keys, and never expose private credentials to the browser.
 - Use **canvas-confetti** only for celebratory success feedback, not as a general-purpose animation system.
 
+## Domain rules
+
+- The bolão domain rules — concepts, winning condition, pool lifecycle, prize split, rounds and the four distinct
+  dates — are documented in `docs/regras-bolao.md`. Read it before changing anything related to bolão, rodada,
+  ranking, apuração, prêmio or datas.
+- `docs/regras-bolao.md` describes the **target** model; parts of it are still pending implementation. Check the
+  status note at the top of that file before assuming the code follows the documented rule.
+
 ## Quality and safety rules
 
 - Preserve accessibility: use semantic HTML, keyboard-operable controls, visible focus states, labels for form fields, and appropriate dialog behavior.
