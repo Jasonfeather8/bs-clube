@@ -27,14 +27,17 @@ function pad(number: number) {
   return String(number).padStart(2, '0');
 }
 
-function statusBadge(status: string) {
+function statusBadge(status: string, roundsPublished = 0) {
   switch (status) {
     case 'open':
       return { label: 'Aberto', className: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
     case 'late_registration':
       return { label: 'Reg. Tardio', className: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
     case 'closed':
-      return { label: 'Encerrado', className: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+      // Bolão que já publicou rodada está em andamento: as vendas é que estão encerradas.
+      return roundsPublished > 0
+        ? { label: 'Em andamento', className: 'bg-sky-500/10 text-sky-400 border-sky-500/20' }
+        : { label: 'Vagas preenchidas', className: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
     case 'completed':
       return { label: 'Concluído', className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
     case 'inactive':
@@ -45,7 +48,7 @@ function statusBadge(status: string) {
 }
 
 export default function BetCard({ bet, onOpen }: BetCardProps) {
-  const status = statusBadge(bet.poolStatus);
+  const status = statusBadge(bet.poolStatus, bet.roundsPublished);
   const officialSet = new Set(bet.officialNumbers);
 
   return (

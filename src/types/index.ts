@@ -538,9 +538,3 @@ export interface AdminFinancialMetrics {
   premiosPercent: number;
   apostadoresAtivos: number;
 }
-
-export interface ManualDrawInput {
-  concurso: string;
-  data: string;
-  dezenas: number[];
-}

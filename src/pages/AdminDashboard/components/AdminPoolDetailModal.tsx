@@ -31,10 +31,6 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('pt-BR');
 }
 
-function formatNumbers(numbers: number[]) {
-  return numbers.map((number) => String(number).padStart(2, '0')).join(' · ') || '—';
-}
-
 function statusLabel(status: string, currentRound = 0) {
   switch (status) {
     case 'open':
@@ -108,14 +104,16 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
   const maxRounds = detail?.pool.maxRounds ?? category?.maxRounds ?? 20;
   const poolStatus = detail?.pool.status ?? category?.poolStatus ?? '';
   const status = statusLabel(poolStatus, currentRound);
+  // Dezenas que já saíram em qualquer rodada publicada (união, sem repetição).
+  const drawnNumbers = new Set(rounds.flatMap((round) => round.numbers));
   const publishDisabledReason = poolStatus === 'completed'
-    ? 'Bolão já apurado'
+    ? 'Bolão apurado — não aceita novas rodadas'
     : poolStatus === 'inactive'
-      ? 'Bolão inativo'
+      ? 'Bolão inativo — reative para publicar rodadas'
       : currentRound >= maxRounds
-        ? 'Limite de rodadas atingido'
+        ? `Limite de ${maxRounds} rodadas atingido`
         : (detail?.pool.filledSlots ?? category?.filled ?? 0) === 0
-          ? 'Sem cotas vendidas'
+          ? 'Nenhuma cota vendida ainda'
           : '';
 
   const exportCsv = () => {
@@ -163,12 +161,6 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
           <p className="text-xs text-slate-400 mt-1">Concurso {category.concurso || 'não informado'} · Apostadores e detalhes do bolão</p>
         </div>
 
-        <div className="mb-5 flex justify-end">
-          <button type="button" onClick={onPublishRound} disabled={Boolean(publishDisabledReason)} title={publishDisabledReason || undefined} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70">
-            <i className="fa-solid fa-bullhorn mr-2" aria-hidden="true"></i>Publicar próximo concurso
-          </button>
-        </div>
-
         {isLoading && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-10 text-center text-slate-300" role="status">
             <i className="fa-solid fa-circle-notch fa-spin text-emerald-400 text-xl mr-2"></i>Carregando apostadores...
@@ -203,9 +195,19 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
             </div>
 
             <section className="space-y-3" aria-labelledby="pool-detail-rounds-title">
-              <div className="flex items-center justify-between">
-                <h4 id="pool-detail-rounds-title" className="font-heading font-bold text-white">Rodadas</h4>
-                <span className="text-xs text-slate-400">{rounds.length}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h4 id="pool-detail-rounds-title" className="font-heading font-bold text-white">Rodadas</h4>
+                  <p className="text-xs text-slate-400">{rounds.length} de {maxRounds} publicada(s)</p>
+                </div>
+                <div className="flex flex-col items-start sm:items-end gap-1">
+                  <button type="button" onClick={onPublishRound} disabled={Boolean(publishDisabledReason)} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70">
+                    <i className="fa-solid fa-bullhorn mr-2" aria-hidden="true"></i>Publicar próximo concurso
+                  </button>
+                  {publishDisabledReason && (
+                    <span className="text-[11px] text-amber-300/90" role="status">{publishDisabledReason}</span>
+                  )}
+                </div>
               </div>
               {rounds.length === 0 ? (
                 <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 text-center text-sm text-slate-400" role="status">Nenhuma rodada publicada ainda.</div>
@@ -232,7 +234,7 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                 <div>
                   <h4 id="pool-detail-participants-title" className="font-heading font-bold text-white">Apostadores</h4>
-                  <p className="text-xs text-slate-500">Clique em exportar para baixar a lista em CSV.</p>
+                  <p className="text-xs text-slate-500">Em verde, as dezenas que já saíram em alguma rodada · clique em exportar para baixar a lista em CSV.</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="relative w-full sm:w-64">
@@ -292,13 +294,27 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
                               </div>
                             </td>
                             <td className="p-4">
-                              <span className="text-emerald-400 font-mono text-xs">{formatNumbers(participant.numbers)}</span>
+                              <div className="flex items-center gap-1" role="img" aria-label={`Cartela ${participant.numbers.map((number) => String(number).padStart(2, '0')).join(', ')}`}>
+                                {participant.numbers.map((number) => {
+                                  const drawn = hasResult && drawnNumbers.has(number);
+                                  return (
+                                    <span
+                                      key={number}
+                                      className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-mono font-bold ${
+                                        drawn ? 'bg-emerald-500 text-slate-950' : 'border border-slate-700 bg-slate-800 text-slate-300'
+                                      }`}
+                                    >
+                                      {String(number).padStart(2, '0')}
+                                    </span>
+                                  );
+                                })}
+                              </div>
                             </td>
                             <td className="p-4 text-right text-slate-300 font-mono text-xs">{formatCurrency(participant.cotaPrice)}</td>
                             <td className="p-4 text-center text-slate-400 text-xs font-mono">{formatDateTime(participant.createdAt)}</td>
                             <td className="p-4 text-center">
                               {hasResult ? (
-                                <span className={`text-xs font-bold ${participant.hits >= 6 ? 'text-amber-300' : 'text-slate-400'}`}>{participant.hits}</span>
+                                <span className={`text-xs font-bold ${participant.hits >= 6 ? 'text-amber-300' : 'text-slate-400'}`}>{participant.hits}/6</span>
                               ) : (
                                 <span className="text-slate-600 text-xs">—</span>
                               )}

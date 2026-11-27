@@ -20,7 +20,6 @@ export default function AdminCategoriesPage() {
     handleDeleteCategory,
     setIsCategoryModalOpen,
     setIsPrizeSettingsModalOpen,
-    setIsManualDrawModalOpen,
     setEditingCategory,
     setPublishRoundCategory,
     setCorrectionRound,
@@ -43,7 +42,6 @@ export default function AdminCategoriesPage() {
         isLoading={isCategoriesLoading}
         onOpenNewCategory={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }}
         onOpenPrizeSettings={() => setIsPrizeSettingsModalOpen(true)}
-        onOpenManualDraw={() => setIsManualDrawModalOpen(true)}
         onEditCategory={(category) => { setEditingCategory(category); setIsCategoryModalOpen(true); }}
         onPublishRound={(category) => { setCorrectionRound(null); setPublishRoundCategory(category); }}
         onViewResult={(category) => setReadOnlyResultCategory(category)}
