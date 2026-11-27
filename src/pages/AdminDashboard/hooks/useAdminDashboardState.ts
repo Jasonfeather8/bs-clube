@@ -14,12 +14,12 @@ import {
   useUpdateCategory,
   useDeleteCategory,
   useToggleCategoryStatus,
-  useRegisterOfficialResult,
+  usePublishPoolRound,
   useExecuteManualDraw,
   usePrizeSettings,
   useUpdatePrizeSettings,
 } from '../../../hooks/useAdmin';
-import { AdminCategory, AdminCategoryInput, AdminCategoryStatus, AdminUser, AdminWithdrawal, ManualDrawInput, PrizeSettings, RegisterResultInput } from '../../../types';
+import { AdminCategory, AdminCategoryInput, AdminCategoryStatus, AdminRound, AdminUser, AdminWithdrawal, ManualDrawInput, PrizeSettings, PublishRoundInput } from '../../../types';
 
 export function useAdminDashboardState() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -30,7 +30,8 @@ export function useAdminDashboardState() {
   const [isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen] = useState(false);
   const [isManualDrawModalOpen, setIsManualDrawModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
-  const [resultCategory, setResultCategory] = useState<AdminCategory | null>(null);
+  const [publishRoundCategory, setPublishRoundCategory] = useState<AdminCategory | null>(null);
+  const [correctionRound, setCorrectionRound] = useState<AdminRound | null>(null);
   const [readOnlyResultCategory, setReadOnlyResultCategory] = useState<AdminCategory | null>(null);
   const [poolDetailCategory, setPoolDetailCategory] = useState<AdminCategory | null>(null);
   const [userDetail, setUserDetail] = useState<AdminUser | null>(null);
@@ -72,7 +73,7 @@ export function useAdminDashboardState() {
   const updateCategoryMutation = useUpdateCategory();
   const deleteCategoryMutation = useDeleteCategory();
   const toggleCategoryStatusMutation = useToggleCategoryStatus();
-  const registerResultMutation = useRegisterOfficialResult();
+  const publishPoolRoundMutation = usePublishPoolRound();
   const executeManualDrawMutation = useExecuteManualDraw();
   const updatePrizeSettingsMutation = useUpdatePrizeSettings();
   const filteredUsers = users;
@@ -162,17 +163,18 @@ export function useAdminDashboardState() {
     }
   };
 
-  const handleRegisterResult = async (data: RegisterResultInput) => {
+  const handlePublishRound = async (data: PublishRoundInput) => {
     try {
-      const outcome = await registerResultMutation.mutateAsync(data);
-      setResultCategory(null);
+      const outcome = await publishPoolRoundMutation.mutateAsync(data);
+      setPublishRoundCategory(null);
+      setCorrectionRound(null);
       setAlertConfig(
         outcome.settled
           ? { title: 'Bolão Apurado', msg: outcome.message, icon: 'fa-trophy text-amber-400' }
           : { title: 'Rodada Publicada', msg: outcome.message, icon: 'fa-bullhorn text-emerald-400' },
       );
     } catch (err: any) {
-      setAlertConfig({ title: 'Erro no Resultado', msg: err?.message || 'Falha ao registrar resultado.', icon: 'fa-triangle-exclamation text-rose-400' });
+      setAlertConfig({ title: 'Erro ao publicar rodada', msg: err?.message || 'Falha ao publicar a rodada.', icon: 'fa-triangle-exclamation text-rose-400' });
     }
   };
 
@@ -190,7 +192,7 @@ export function useAdminDashboardState() {
     isSidebarOpen, setIsSidebarOpen, isSidebarCollapsed, setIsSidebarCollapsed, activeView, setActiveView,
     isManualDrawModalOpen, setIsManualDrawModalOpen, isExecutingManualDraw: executeManualDrawMutation.isPending, handleExecuteManualDraw,
     withdrawalModal, setWithdrawalModal, isCategoryModalOpen, setIsCategoryModalOpen, isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen, editingCategory, setEditingCategory,
-    resultCategory, setResultCategory, readOnlyResultCategory, setReadOnlyResultCategory, resultDetails, isResultDetailsLoading, resultDetailsError, alertConfig, setAlertConfig, prizeSettings, userSearchTerm, setUserSearchTerm: handleUserSearchChange,
+    publishRoundCategory, setPublishRoundCategory, correctionRound, setCorrectionRound, readOnlyResultCategory, setReadOnlyResultCategory, resultDetails, isResultDetailsLoading, resultDetailsError, alertConfig, setAlertConfig, prizeSettings, userSearchTerm, setUserSearchTerm: handleUserSearchChange,
     poolDetailCategory, setPoolDetailCategory, poolDetail, isPoolDetailLoading, poolDetailError,
     userDetail, setUserDetail, userDetails, isUserDetailsLoading, userDetailsError, isTogglingUserStatus: toggleUserStatusMutation.isPending,
     userStatusFilter, setUserStatusFilter: handleUserStatusFilterChange, page: userPage, totalPages, totalCount, setPage: setUserPage,
@@ -201,7 +203,7 @@ export function useAdminDashboardState() {
     isDeletingCategory: deleteCategoryMutation.isPending,
     isTogglingCategoryStatus: toggleCategoryStatusMutation.isPending,
     isUpdatingPrizeSettings: updatePrizeSettingsMutation.isPending,
-    isRegisteringResult: registerResultMutation.isPending,
-    handleApproveWithdrawal, handleRejectWithdrawal, handleToggleUser, handleCreateCategory, handleUpdateCategory, handleToggleCategoryStatus, handleDeleteCategory, handleUpdatePrizeSettings, handleRegisterResult,
+    isPublishingRound: publishPoolRoundMutation.isPending,
+    handleApproveWithdrawal, handleRejectWithdrawal, handleToggleUser, handleCreateCategory, handleUpdateCategory, handleToggleCategoryStatus, handleDeleteCategory, handleUpdatePrizeSettings, handlePublishRound,
   };
 }

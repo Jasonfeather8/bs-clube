@@ -205,12 +205,11 @@ export interface QuotaInput {
   amount: number;
 }
 
-export type AdminCategoryStatus = 'open' | 'closed' | 'completed' | 'inactive';
+export type AdminCategoryStatus = 'open' | 'late_registration' | 'closed' | 'completed' | 'inactive';
 
 export interface AdminCategory {
   id: number | string;
   poolId?: string;
-  drawId?: string;
   quotaId?: string;
   name: string;
   concurso?: string;
@@ -223,6 +222,9 @@ export interface AdminCategory {
   numbers?: number[];
   housePercentage: number;
   winnerPercentage: number;
+  currentRound: number;
+  maxRounds: number;
+  settledAt?: string;
   poolStatus: AdminCategoryStatus;
   status: 'em_andamento' | 'finalizado' | 'concluido' | 'inativo';
 }
@@ -253,24 +255,36 @@ export interface AdminCategoryInput {
   winnerPercentage: number;
 }
 
-export interface RegisterResultInput {
-  poolId: string;
+export interface AdminRound {
+  id: string;
   drawId: string;
+  roundNumber: number;
+  contest: string;
   drawDate: string;
-  dezenas: number[];
+  numbers: number[];
+  isPublished: boolean;
+  publishedAt: string;
 }
 
-export interface RegisterResultOutcome {
+export interface PublishRoundInput {
+  poolId: string;
+  concurso: string;
+  drawDate: string;
+  dezenas: number[];
+  /** Presente quando a chamada é uma correção de rodada existente. */
+  roundId?: string;
+}
+
+export interface PublishRoundOutcome {
+  settled: boolean;
+  message: string;
+  roundNumber: number;
+  maxRounds: number;
+  maxHits: number;
+  winnerCount: number;
   gross: number;
   house: number;
   winners: number;
-  winnerCount: number;
-  /** Indica se o bolão foi apurado e encerrado nesta rodada. */
-  settled: boolean;
-  /** Rodada publicada e resultado da apuração, já em pt-BR. */
-  message: string;
-  roundNumber: number;
-  maxHits: number;
   category: AdminCategory;
 }
 
@@ -285,7 +299,11 @@ export interface AdminResultDetail {
     winnerPercentage: number;
     status: string;
     createdAt?: string;
+    currentRound: number;
+    maxRounds: number;
+    settledAt?: string;
   };
+  rounds: AdminRound[];
   draw: {
     id: string;
     contest: string;
@@ -349,7 +367,11 @@ export interface AdminPoolDetail {
     winnerPercentage: number;
     status: string;
     createdAt?: string;
+    currentRound: number;
+    maxRounds: number;
+    settledAt?: string;
   };
+  rounds: AdminRound[];
   draw: {
     id: string;
     contest: string;

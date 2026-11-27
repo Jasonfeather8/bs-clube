@@ -5,7 +5,7 @@ import AdminSidebar from '../pages/AdminDashboard/components/AdminSidebar';
 import AdminHeader from '../pages/AdminDashboard/components/AdminHeader';
 import WithdrawalAnalysisModal from '../pages/AdminDashboard/components/WithdrawalAnalysisModal';
 import NewCategoryModal from '../pages/AdminDashboard/components/NewCategoryModal';
-import RegisterResultModal from '../pages/AdminDashboard/components/RegisterResultModal';
+import PublishRoundModal from '../pages/AdminDashboard/components/PublishRoundModal';
 import AdminResultDetailModal from '../pages/AdminDashboard/components/AdminResultDetailModal';
 import AdminPoolDetailModal from '../pages/AdminDashboard/components/AdminPoolDetailModal';
 import AdminUserDetailModal from '../pages/AdminDashboard/components/AdminUserDetailModal';
@@ -17,13 +17,13 @@ function AdminLayoutInner() {
   const {
     isSidebarOpen, setIsSidebarOpen, isSidebarCollapsed, setIsSidebarCollapsed,
     withdrawalModal, setWithdrawalModal, isCategoryModalOpen, setIsCategoryModalOpen,
-    isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen, editingCategory, setEditingCategory, resultCategory, setResultCategory,
+    isPrizeSettingsModalOpen, setIsPrizeSettingsModalOpen, editingCategory, setEditingCategory, publishRoundCategory, setPublishRoundCategory, correctionRound, setCorrectionRound,
     readOnlyResultCategory, setReadOnlyResultCategory, resultDetails, isResultDetailsLoading, resultDetailsError,
     poolDetailCategory, setPoolDetailCategory, poolDetail, isPoolDetailLoading, poolDetailError,
     userDetail, setUserDetail, userDetails, isUserDetailsLoading, userDetailsError, isTogglingUserStatus,
     alertConfig, setAlertConfig, prizeSettings, pendingWithdrawals, isProcessingWithdrawal,
-    isCreatingCategory, isUpdatingPrizeSettings, isRegisteringResult, handleApproveWithdrawal, handleRejectWithdrawal,
-    handleCreateCategory, handleUpdateCategory, handleUpdatePrizeSettings, handleRegisterResult, handleToggleUser,
+    isCreatingCategory, isUpdatingPrizeSettings, isPublishingRound, handleApproveWithdrawal, handleRejectWithdrawal,
+    handleCreateCategory, handleUpdateCategory, handleUpdatePrizeSettings, handlePublishRound, handleToggleUser,
     isManualDrawModalOpen, setIsManualDrawModalOpen, isExecutingManualDraw, handleExecuteManualDraw,
   } = useAdmin();
 
@@ -62,12 +62,13 @@ function AdminLayoutInner() {
         onSubmit={categoryModalSubmit}
         isSubmitting={isCreatingCategory}
       />
-      <RegisterResultModal
-        isOpen={Boolean(resultCategory)}
-        category={resultCategory}
-        onClose={() => setResultCategory(null)}
-        onSubmit={handleRegisterResult}
-        isSubmitting={isRegisteringResult}
+      <PublishRoundModal
+        isOpen={Boolean(publishRoundCategory)}
+        category={publishRoundCategory}
+        round={correctionRound}
+        onClose={() => { setPublishRoundCategory(null); setCorrectionRound(null); }}
+        onSubmit={handlePublishRound}
+        isSubmitting={isPublishingRound}
       />
       <AdminResultDetailModal
         isOpen={Boolean(readOnlyResultCategory)}
@@ -84,6 +85,8 @@ function AdminLayoutInner() {
         isLoading={isPoolDetailLoading}
         error={poolDetailError}
         onClose={() => setPoolDetailCategory(null)}
+        onPublishRound={() => { setCorrectionRound(null); setPublishRoundCategory(poolDetailCategory); setPoolDetailCategory(null); }}
+        onCorrectRound={(round) => { setCorrectionRound(round); setPublishRoundCategory(poolDetailCategory); setPoolDetailCategory(null); }}
       />
       <AdminUserDetailModal
         isOpen={Boolean(userDetail)}

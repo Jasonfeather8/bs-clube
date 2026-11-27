@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import AdminPagination from '../../../components/AdminPagination';
-import { AdminCategory, AdminPoolDetail } from '../../../types';
+import { AdminCategory, AdminPoolDetail, AdminRound } from '../../../types';
 
 interface AdminPoolDetailModalProps {
   isOpen: boolean;
@@ -9,6 +9,8 @@ interface AdminPoolDetailModalProps {
   isLoading: boolean;
   error: unknown;
   onClose: () => void;
+  onPublishRound: () => void;
+  onCorrectRound: (round: AdminRound) => void;
 }
 
 const PAGE_SIZE = 10;
@@ -33,14 +35,14 @@ function formatNumbers(numbers: number[]) {
   return numbers.map((number) => String(number).padStart(2, '0')).join(' · ') || '—';
 }
 
-function statusLabel(status: string) {
+function statusLabel(status: string, currentRound = 0) {
   switch (status) {
     case 'open':
       return { label: 'Aberto', className: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
     case 'late_registration':
       return { label: 'Reg. Tardio', className: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
     case 'closed':
-      return { label: 'Vagas preenchidas', className: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+      return { label: currentRound > 0 ? 'Em andamento' : 'Vagas preenchidas', className: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
     case 'completed':
       return { label: 'Concluído', className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
     case 'inactive':
@@ -72,7 +74,7 @@ function DetailMetric({ label, value, valueClass = 'text-white' }: { label: stri
   );
 }
 
-export default function AdminPoolDetailModal({ isOpen, category, detail, isLoading, error, onClose }: AdminPoolDetailModalProps) {
+export default function AdminPoolDetailModal({ isOpen, category, detail, isLoading, error, onClose, onPublishRound, onCorrectRound }: AdminPoolDetailModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
 
@@ -100,8 +102,21 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-  const hasResult = Boolean(detail?.draw?.isPublished && detail.draw.numbers.length > 0);
-  const status = statusLabel(detail?.pool.status ?? category?.poolStatus ?? '');
+  const rounds = [...(detail?.rounds ?? [])].sort((a, b) => a.roundNumber - b.roundNumber);
+  const hasResult = rounds.length > 0;
+  const currentRound = detail?.pool.currentRound ?? category?.currentRound ?? 0;
+  const maxRounds = detail?.pool.maxRounds ?? category?.maxRounds ?? 20;
+  const poolStatus = detail?.pool.status ?? category?.poolStatus ?? '';
+  const status = statusLabel(poolStatus, currentRound);
+  const publishDisabledReason = poolStatus === 'completed'
+    ? 'Bolão já apurado'
+    : poolStatus === 'inactive'
+      ? 'Bolão inativo'
+      : currentRound >= maxRounds
+        ? 'Limite de rodadas atingido'
+        : (detail?.pool.filledSlots ?? category?.filled ?? 0) === 0
+          ? 'Sem cotas vendidas'
+          : '';
 
   const exportCsv = () => {
     if (filtered.length === 0) return;
@@ -143,8 +158,15 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
             <i className="fa-solid fa-users-viewfinder text-emerald-400 text-lg"></i>
             <span>{category.name}</span>
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${status.className}`}>{status.label}</span>
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">Rodada {detail?.pool.currentRound ?? category.currentRound} de {detail?.pool.maxRounds ?? category.maxRounds}</span>
           </h3>
           <p className="text-xs text-slate-400 mt-1">Concurso {category.concurso || 'não informado'} · Apostadores e detalhes do bolão</p>
+        </div>
+
+        <div className="mb-5 flex justify-end">
+          <button type="button" onClick={onPublishRound} disabled={Boolean(publishDisabledReason)} title={publishDisabledReason || undefined} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70">
+            <i className="fa-solid fa-bullhorn mr-2" aria-hidden="true"></i>Publicar próximo concurso
+          </button>
         </div>
 
         {isLoading && (
@@ -164,7 +186,7 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <DetailMetric label="Cota" value={formatCurrency(detail.pool.buyIn)} valueClass="text-emerald-400" />
               <DetailMetric label="Vagas" value={`${detail.pool.filledSlots} / ${detail.pool.totalSlots}`} />
-              <DetailMetric label="Data do sorteio" value={formatDate(detail.draw?.drawDate ?? '')} />
+              <DetailMetric label="Criado em" value={formatDate(detail.pool.createdAt ?? '')} />
               <DetailMetric label="Prêmio estimado" value={formatCurrency(detail.pool.prizeEstimate)} valueClass="text-brand-gold" />
             </div>
 
@@ -177,23 +199,34 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
                 value={detail.settlement ? formatCurrency(detail.settlement.winnersAmount) : `${detail.pool.housePercentage}% / ${detail.pool.winnerPercentage}%`}
                 valueClass={detail.settlement ? 'text-amber-300' : 'text-slate-200'}
               />
+              {detail.pool.settledAt && <DetailMetric label="Concluído em" value={formatDateTime(detail.pool.settledAt)} />}
             </div>
 
-            {hasResult && detail.draw && (
-              <section className="rounded-2xl border border-amber-500/25 bg-slate-950/60 p-4 sm:p-5" aria-labelledby="pool-detail-result-title">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                  <h4 id="pool-detail-result-title" className="font-heading font-bold text-white">Dezenas oficiais</h4>
-                  <span className="text-xs text-slate-400">Resultado publicado · {formatDate(detail.draw.drawDate)}</span>
-                </div>
-                <div className="flex justify-center gap-2 sm:gap-3">
-                  {detail.draw.numbers.map((number, index) => (
-                    <div key={`${number}-${index}`} className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-heading font-black text-base sm:text-lg shadow-lg shadow-amber-900/30">
-                      {String(number).padStart(2, '0')}
+            <section className="space-y-3" aria-labelledby="pool-detail-rounds-title">
+              <div className="flex items-center justify-between">
+                <h4 id="pool-detail-rounds-title" className="font-heading font-bold text-white">Rodadas</h4>
+                <span className="text-xs text-slate-400">{rounds.length}</span>
+              </div>
+              {rounds.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 text-center text-sm text-slate-400" role="status">Nenhuma rodada publicada ainda.</div>
+              ) : rounds.map((round) => (
+                <article key={round.id} className="rounded-2xl border border-amber-500/25 bg-slate-950/60 p-4 sm:p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div>
+                      <h5 className="font-heading font-bold text-white">Rodada {round.roundNumber} · Concurso {round.contest}</h5>
+                      <p className="mt-1 text-xs text-slate-400">Data do sorteio: {formatDate(round.drawDate)}</p>
+                      <p className="mt-1 text-xs text-slate-400">Publicado em: {formatDateTime(round.publishedAt)}</p>
                     </div>
-                  ))}
-                </div>
-              </section>
-            )}
+                    {detail.pool.status !== 'completed' && <button type="button" onClick={() => onCorrectRound(round)} className="self-start rounded-lg border border-amber-500/40 px-3 py-1.5 text-xs font-bold text-amber-300 transition hover:bg-amber-500/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70">Corrigir</button>}
+                  </div>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2 sm:gap-3">
+                    {round.numbers.map((number, index) => (
+                      <div key={`${number}-${index}`} className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-heading font-black text-base sm:text-lg shadow-lg shadow-amber-900/30">{String(number).padStart(2, '0')}</div>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </section>
 
             <section aria-labelledby="pool-detail-participants-title">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
@@ -265,7 +298,7 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
                             <td className="p-4 text-center text-slate-400 text-xs font-mono">{formatDateTime(participant.createdAt)}</td>
                             <td className="p-4 text-center">
                               {hasResult ? (
-                                <span className={`text-xs font-bold ${participant.hits >= 4 ? 'text-amber-300' : 'text-slate-400'}`}>{participant.hits}</span>
+                                <span className={`text-xs font-bold ${participant.hits >= 6 ? 'text-amber-300' : 'text-slate-400'}`}>{participant.hits}</span>
                               ) : (
                                 <span className="text-slate-600 text-xs">—</span>
                               )}

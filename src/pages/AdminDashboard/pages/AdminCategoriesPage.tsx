@@ -22,7 +22,8 @@ export default function AdminCategoriesPage() {
     setIsPrizeSettingsModalOpen,
     setIsManualDrawModalOpen,
     setEditingCategory,
-    setResultCategory,
+    setPublishRoundCategory,
+    setCorrectionRound,
     setReadOnlyResultCategory,
     setPoolDetailCategory,
   } = useAdmin();
@@ -44,7 +45,7 @@ export default function AdminCategoriesPage() {
         onOpenPrizeSettings={() => setIsPrizeSettingsModalOpen(true)}
         onOpenManualDraw={() => setIsManualDrawModalOpen(true)}
         onEditCategory={(category) => { setEditingCategory(category); setIsCategoryModalOpen(true); }}
-        onRegisterResult={(category) => setResultCategory(category)}
+        onPublishRound={(category) => { setCorrectionRound(null); setPublishRoundCategory(category); }}
         onViewResult={(category) => setReadOnlyResultCategory(category)}
         onViewDetails={(category) => setPoolDetailCategory(category)}
         onToggleCategoryStatus={handleToggleCategoryStatus}

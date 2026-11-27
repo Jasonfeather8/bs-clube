@@ -3,11 +3,11 @@
 Documento de referência das regras de negócio do bolão. Descreve **o modelo alvo** definido com o cliente.
 Leia antes de alterar qualquer coisa relacionada a bolão, rodada, ranking, apuração, prêmio ou datas.
 
-> **Status da implementação:** as regras abaixo são o **alvo**. A camada de banco já as implementa (Etapa 1
-> concluída: tabela `pool_rounds`, RPC `publish_pool_round`, ranking e acertos acumulados). A **interface ainda
-> não expõe as rodadas**: publicar a rodada 1 já funciona pela tela atual do admin, mas ainda não existe botão
-> para publicar a rodada 2 (Etapa 2), e as telas do apostador ainda não mostram o progresso até a meta (Etapa 3).
-> Não presuma que a interface reflete este documento.
+> **Status da implementação:** as regras abaixo são o **alvo**. O banco e a tela do admin já as implementam
+> (Etapa 1: tabela `pool_rounds`, RPC `publish_pool_round`, ranking e acertos acumulados. Etapa 2: publicação e
+> correção de rodadas pelo admin, histórico de rodadas no detalhe do bolão e as quatro datas separadas). Falta a
+> **Etapa 3**: as telas do apostador ainda não mostram o progresso até a meta. Não presuma que a interface
+> reflete este documento.
 
 ## Conceitos
 
@@ -57,13 +57,13 @@ São **quatro** datas distintas e nenhuma pode ser reaproveitada no lugar de out
 | Publicação da rodada | `pool_rounds.published_at` | Quando as dezenas daquela rodada foram publicadas no sistema. |
 | Conclusão do bolão | `pools.settled_at` / `prize_settlements.created_at` | Quando o bolão foi apurado e encerrado. |
 
-### Defeito conhecido no modelo antigo
+### Defeito corrigido no modelo antigo
 
-Hoje existe apenas `draws.draw_date`, e ela é **sobrescrita** no momento da apuração
-(`register_pool_result` faz `UPDATE draws SET draw_date = <data informada no formulário>`). Como o modal admin
-exibe esse mesmo campo como "Data do sorteio" e também como "Resultado publicado", a data de conclusão acaba
-aparecendo como se fosse a do sorteio. A data de criação (`pools.created_at`) não é exibida em lugar nenhum.
-Isso deve ser corrigido com a separação das quatro datas acima.
+Antes existia apenas `draws.draw_date`, e ela era **sobrescrita** no momento da apuração. Como o modal admin
+exibia esse mesmo campo como "Data do sorteio" e também como "Resultado publicado", a data de conclusão acabava
+aparecendo como se fosse a do sorteio, e a data de criação (`pools.created_at`) não era exibida em lugar nenhum.
+As quatro datas da tabela acima são a correção: cada uma tem sua origem própria e nenhuma é reaproveitada no
+lugar de outra.
 
 ## Ciclo de vida
 

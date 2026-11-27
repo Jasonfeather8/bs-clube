@@ -12,8 +12,9 @@ import {
   AdminCategoriesQuery,
   ManualDrawInput,
   PrizeSettings,
-  RegisterResultInput,
-  RegisterResultOutcome,
+  PublishRoundInput,
+  PublishRoundOutcome,
+  AdminRound,
   AdminResultDetail,
   AdminPoolDetail,
   AdminPoolParticipant,
@@ -101,12 +102,11 @@ function mapCategory(row: Row): AdminCategory {
   const pools = Array.isArray(row.pools) ? row.pools : row.pools ? [row.pools] : [];
   const pool = pools[0] ?? {};
   const draw = Array.isArray(pool.draws) ? pool.draws[0] : pool.draws;
-  const rawPoolStatus = pool.status === 'late_registration' ? 'open' : pool.status;
-  const poolStatus: AdminCategoryStatus = rawPoolStatus === 'inactive' ? 'inactive' : rawPoolStatus === 'completed' ? 'completed' : rawPoolStatus === 'closed' ? 'closed' : 'open';
+  const rawPoolStatus = pool.status;
+  const poolStatus: AdminCategoryStatus = rawPoolStatus === 'inactive' ? 'inactive' : rawPoolStatus === 'completed' ? 'completed' : rawPoolStatus === 'closed' ? 'closed' : rawPoolStatus === 'late_registration' ? 'late_registration' : 'open';
   return {
     id: String(row.id),
     poolId: pool.id ? String(pool.id) : undefined,
-    drawId: pool.draw_id ? String(pool.draw_id) : draw?.id ? String(draw.id) : undefined,
     name: row.name ?? '',
     concurso: draw?.contest ?? '',
     cota: Number(pool.buy_in ?? 0),
@@ -119,8 +119,24 @@ function mapCategory(row: Row): AdminCategory {
     numbers: Array.isArray(draw?.numbers) ? draw.numbers.map(Number) : [],
     housePercentage: Number(pool.house_percentage ?? DEFAULT_PRIZE_SETTINGS.housePercentage),
     winnerPercentage: Number(pool.winner_percentage ?? DEFAULT_PRIZE_SETTINGS.winnerPercentage),
+    currentRound: Number(pool.current_round ?? 0),
+    maxRounds: Number(pool.max_rounds ?? 20),
+    settledAt: pool.settled_at ?? undefined,
     poolStatus,
     status: poolStatus === 'inactive' ? 'inativo' : poolStatus === 'completed' ? 'concluido' : poolStatus === 'closed' ? 'finalizado' : 'em_andamento',
+  };
+}
+
+function mapRound(round: Row): AdminRound {
+  return {
+    id: String(round.id ?? ''),
+    drawId: String(round.draw_id ?? ''),
+    roundNumber: Number(round.round_number ?? 0),
+    contest: String(round.contest ?? ''),
+    drawDate: String(round.draw_date ?? ''),
+    numbers: Array.isArray(round.numbers) ? round.numbers.map(Number) : [],
+    isPublished: round.is_published === true,
+    publishedAt: String(round.published_at ?? ''),
   };
 }
 
@@ -570,7 +586,11 @@ export const adminService = {
         winnerPercentage: Number(pool.winner_percentage ?? 0),
         status: String(pool.status ?? ''),
         createdAt: pool.created_at ?? undefined,
+        currentRound: Number(pool.current_round ?? 0),
+        maxRounds: Number(pool.max_rounds ?? 20),
+        settledAt: pool.settled_at ?? undefined,
       },
+      rounds: (Array.isArray(result.rounds) ? result.rounds : []).map(mapRound),
       draw: {
         id: String(draw.id ?? ''),
         contest: String(draw.contest ?? ''),
@@ -629,7 +649,11 @@ export const adminService = {
         winnerPercentage: Number(pool.winner_percentage ?? 0),
         status: String(pool.status ?? ''),
         createdAt: pool.created_at ?? undefined,
+        currentRound: Number(pool.current_round ?? 0),
+        maxRounds: Number(pool.max_rounds ?? 20),
+        settledAt: pool.settled_at ?? undefined,
       },
+      rounds: (Array.isArray(result.rounds) ? result.rounds : []).map(mapRound),
       draw: draw
         ? {
             id: String(draw.id ?? ''),
@@ -759,18 +783,23 @@ export const adminService = {
     };
   },
 
-  async registerOfficialResult(input: RegisterResultInput): Promise<RegisterResultOutcome> {
+  async publishPoolRound(input: PublishRoundInput): Promise<PublishRoundOutcome> {
     await requireAdmin();
-    if (!input.poolId || !input.drawId) throw new Error('Bolão inválido para registrar o resultado.');
+    if (!input.poolId) throw new Error('Bolão inválido para publicar a rodada.');
+    const contest = typeof input.concurso === 'string' ? input.concurso.trim() : '';
+    if (!/^\d+$/.test(contest) || !Number.isSafeInteger(Number(contest)) || Number(contest) <= 0) {
+      throw new Error('Informe um número de concurso válido.');
+    }
     if (typeof input.drawDate !== 'string' || !isValidIsoDate(toIsoDate(input.drawDate))) {
       throw new Error('Informe uma data de sorteio válida.');
     }
     validateOfficialNumbers(input.dezenas);
-    const { data, error } = await supabase.rpc('register_pool_result', {
+    const { data, error } = await supabase.rpc('publish_pool_round', {
       p_pool_id: input.poolId,
-      p_draw_id: input.drawId,
+      p_concurso: contest,
       p_draw_date: toIsoDate(input.drawDate),
       p_numbers: input.dezenas,
+      p_round_id: input.roundId ?? null,
     });
     if (error) throw error;
     const outcome = (data ?? {}) as Row;
@@ -782,14 +811,15 @@ export const adminService = {
     if (poolError) throw poolError;
     const category = await readCategory(pool.category_id);
     return {
-      gross: Number(outcome.gross_amount ?? 0),
-      house: Number(outcome.house_amount ?? 0),
-      winners: Number(outcome.winners_amount ?? 0),
-      winnerCount: Number(outcome.winner_count ?? 0),
       settled: outcome.settled === true,
       message: String(outcome.message ?? ''),
       roundNumber: Number(outcome.round_number ?? 0),
+      maxRounds: Number(outcome.max_rounds ?? 20),
       maxHits: Number(outcome.max_hits ?? 0),
+      winnerCount: Number(outcome.winner_count ?? 0),
+      gross: Number(outcome.gross_amount ?? 0),
+      house: Number(outcome.house_amount ?? 0),
+      winners: Number(outcome.winners_amount ?? 0),
       category,
     };
   },

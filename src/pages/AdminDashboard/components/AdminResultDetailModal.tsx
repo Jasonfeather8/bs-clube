@@ -39,6 +39,10 @@ function DetailMetric({ label, value, valueClass = 'text-white' }: { label: stri
 export default function AdminResultDetailModal({ isOpen, category, result, isLoading, error, onClose }: AdminResultDetailModalProps) {
   if (!isOpen || !category) return null;
 
+  // Rodada que fechou o bolão: é a última publicada e a que tem as dezenas oficiais.
+  const settledRounds = [...(result?.rounds ?? [])].sort((a, b) => a.roundNumber - b.roundNumber);
+  const settlingRound = settledRounds.length > 0 ? settledRounds[settledRounds.length - 1] : undefined;
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="admin-result-detail-title">
       <div className="glass-card w-full max-w-4xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl border border-amber-500/30 p-5 sm:p-6 relative shadow-2xl">
@@ -58,12 +62,13 @@ export default function AdminResultDetailModal({ isOpen, category, result, isLoa
             <DetailMetric label="Participantes" value={String(result.participantsCount)} />
             <DetailMetric label="Cartelas compradas" value={String(result.betsCount)} />
             <DetailMetric label="Ganhadores" value={String(result.settlement.winnerCount)} valueClass="text-amber-300" />
+            {result.pool.settledAt && <DetailMetric label="Concluído em" value={formatDateTime(result.pool.settledAt)} />}
           </div>
 
           <section className="rounded-2xl border border-amber-500/25 bg-slate-950/60 p-4 sm:p-5" aria-labelledby="official-result-title">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
               <h4 id="official-result-title" className="font-heading font-bold text-white">Dezenas oficiais</h4>
-              <span className="text-xs text-slate-400">Resultado publicado · {formatDate(result.draw.drawDate)}</span>
+              <span className="text-xs text-slate-400">{settlingRound ? `Rodada ${settlingRound.roundNumber} · ` : ''}Publicado em {formatDateTime(settlingRound?.publishedAt ?? result.settlement.createdAt ?? '')}</span>
             </div>
             <div className="flex justify-center gap-2 sm:gap-3">
               {Array.from({ length: 6 }, (_, index) => result.draw.numbers[index]).map((number, index) => <div key={`${number ?? 'empty'}-${index}`} className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-heading font-black text-base sm:text-lg shadow-lg shadow-amber-900/30">{number ? String(number).padStart(2, '0') : '—'}</div>)}

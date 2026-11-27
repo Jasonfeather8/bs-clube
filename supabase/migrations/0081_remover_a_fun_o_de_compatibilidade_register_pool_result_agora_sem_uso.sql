@@ -1,0 +1,1 @@
+drop function if exists public.register_pool_result(uuid, uuid, date, integer[]);

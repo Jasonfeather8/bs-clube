@@ -6,7 +6,7 @@ import { RANKINGS_QUERY_KEY } from './useRankings';
 import { WALLET_BALANCE_KEY } from './useWallet';
 import { PRIZE_AWARDS_QUERY_KEY } from './usePrizeAwards';
 import { OWN_BETS_KEY } from './useBets';
-import { AdminCategoryInput, AdminCategoryStatus, AdminUserStatus, ManualDrawInput, PrizeSettings, RegisterResultInput } from '../types';
+import { AdminCategoryInput, AdminCategoryStatus, AdminUserStatus, ManualDrawInput, PrizeSettings, PublishRoundInput } from '../types';
 
 export const ADMIN_METRICS_KEY = ['admin', 'metrics'];
 export const ADMIN_WITHDRAWALS_KEY = ['admin', 'withdrawals'];
@@ -225,10 +225,10 @@ export function useExecuteManualDraw() {
   });
 }
 
-export function useRegisterOfficialResult() {
+export function usePublishPoolRound() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: RegisterResultInput) => adminService.registerOfficialResult(data),
+    mutationFn: (input: PublishRoundInput) => adminService.publishPoolRound(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_CATEGORIES_KEY });
       queryClient.invalidateQueries({ queryKey: ADMIN_RESULT_DETAILS_KEY });
