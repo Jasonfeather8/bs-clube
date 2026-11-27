@@ -31,7 +31,8 @@ export default function PublishRoundModal({ isOpen, category, round, onClose, on
 
   useEffect(() => {
     if (!isOpen || !category) return;
-    setContest(round?.contest ?? '');
+    const nextContest = category.concurso ? String(Number(category.concurso) + 1) : '';
+    setContest(round?.contest ?? nextContest);
     setDrawDate(round?.drawDate.slice(0, 10) ?? localToday());
     setNumbers(round?.numbers.length === 6 ? round.numbers.map((number) => String(number).padStart(2, '0')) : ['', '', '', '', '', '']);
     setError('');

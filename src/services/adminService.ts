@@ -153,7 +153,7 @@ function validatePrizeSettings(settings: PrizeSettings) {
   }
 }
 
-const categorySelect = '*, pools!inner(*, draws!inner(id, contest, draw_date, numbers))';
+const categorySelect = '*, pools!inner(*, draws(id, contest, draw_date, numbers))';
 
 async function readCategory(id: number | string): Promise<AdminCategory> {
   const { data, error } = await supabase.from('pool_categories').select(categorySelect).eq('id', String(id)).single();
@@ -164,14 +164,6 @@ async function readCategory(id: number | string): Promise<AdminCategory> {
 function validateCategoryInput(data: AdminCategoryInput) {
   if (typeof data.name !== 'string' || !data.name.trim()) {
     throw new Error('Informe o nome do bolão.');
-  }
-  if (
-    typeof data.concurso !== 'string' ||
-    !/^\d+$/.test(data.concurso.trim()) ||
-    !Number.isSafeInteger(Number(data.concurso)) ||
-    Number(data.concurso) <= 0
-  ) {
-    throw new Error('Informe um número de concurso válido.');
   }
   if (typeof data.quotaId !== 'string' || !data.quotaId.trim()) {
     throw new Error('Selecione uma cota do catálogo.');
@@ -418,8 +410,9 @@ export const adminService = {
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const { data: category, error: categoryError } = await supabase.from('pool_categories').insert({ name, slug, status: 'active' }).select('*').single();
     if (categoryError) throw categoryError;
+    // O concurso é definido ao publicar a 1ª rodada.
     const { data: draw, error: drawError } = await supabase.from('draws').insert({
-      contest: data.concurso.trim(),
+      contest: null,
       draw_date: drawDate,
       location: 'Caixa Econômica Federal',
       numbers: [],
@@ -453,7 +446,7 @@ export const adminService = {
     validateCategoryInput(data);
     const { data: pool, error: poolLookupError } = await supabase
       .from('pools')
-      .select('id, draw_id')
+      .select('id, draw_id, current_round')
       .eq('category_id', String(id))
       .single();
     if (poolLookupError) throw poolLookupError;
@@ -487,11 +480,13 @@ export const adminService = {
       })
       .eq('id', pool.id);
     if (poolError) throw poolError;
-    const { error: drawError } = await supabase
-      .from('draws')
-      .update({ contest: data.concurso.trim(), draw_date: drawDate })
-      .eq('id', pool.draw_id);
-    if (drawError) throw drawError;
+    if (Number(pool.current_round ?? 0) === 0 && pool.draw_id) {
+      const { error: drawError } = await supabase
+        .from('draws')
+        .update({ draw_date: drawDate })
+        .eq('id', pool.draw_id);
+      if (drawError) throw drawError;
+    }
     return readCategory(id);
   },
 
@@ -787,7 +782,7 @@ export const adminService = {
   async publishPoolRound(input: PublishRoundInput): Promise<PublishRoundOutcome> {
     await requireAdmin();
     if (!input.poolId) throw new Error('Bolão inválido para publicar a rodada.');
-    const contest = typeof input.concurso === 'string' ? input.concurso.trim() : '';
+    const contest = typeof input.concurso === 'string' ? input.concurso.trim().replace(/^0+(?=\d)/, '') : '';
     if (!/^\d+$/.test(contest) || !Number.isSafeInteger(Number(contest)) || Number(contest) <= 0) {
       throw new Error('Informe um número de concurso válido.');
     }

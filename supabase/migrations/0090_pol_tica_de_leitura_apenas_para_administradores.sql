@@ -1,0 +1,1 @@
+CREATE POLICY pool_round_audit_admin_select ON public.pool_round_audit FOR SELECT TO authenticated USING (public.is_admin());

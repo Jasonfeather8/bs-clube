@@ -112,7 +112,7 @@ export default function CategoriesManagementTable({
                   aria-label={`Ver apostadores de ${category.name}`}
                 >
                   <td className="p-4 font-bold text-white"><div className="flex items-center space-x-2"><div className={`w-2 h-2 rounded-full ${completed ? 'bg-amber-400' : inactive ? 'bg-slate-500' : 'bg-emerald-400'}`}></div><span>{category.name}</span></div></td>
-                  <td className="p-4 text-center text-slate-300 font-mono"><div>#{category.concurso || '—'}</div><div className="mt-1 text-[10px] text-slate-500">Rodada {category.currentRound}/{category.maxRounds}</div></td>
+                  <td className="p-4 text-center text-slate-300 font-mono"><div>{category.concurso ? '#' + category.concurso : '—'}</div><div className="mt-1 text-[10px] text-slate-500">Rodada {category.currentRound}/{category.maxRounds}</div></td>
                   <td className="p-4 text-center font-bold text-emerald-400 font-mono">{formatCurrency(category.cota)}</td>
                   <td className="p-4 text-center text-slate-300"><div className="flex flex-col items-center justify-center w-24 mx-auto"><span className="text-xs font-bold font-mono">{category.filled} <span className="text-slate-500 font-normal">/ {category.vagas}</span></span><div className="w-full h-1.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden"><div className="h-full bg-gradient-to-r from-emerald-500 to-brand-accent rounded-full" style={{ width: `${progress}%` }}></div></div></div></td>
                   <td className="p-4 text-center text-slate-300 text-xs font-mono">{category.drawDate || '—'}</td>

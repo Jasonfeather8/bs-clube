@@ -285,7 +285,6 @@ export interface AdminCategoriesPage {
 
 export interface AdminCategoryInput {
   name: string;
-  concurso: string;
   quotaId: string;
   vagas: number;
   drawDate: string;

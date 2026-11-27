@@ -202,7 +202,7 @@ export default function AdminPoolDetailModal({ isOpen, category, detail, isLoadi
                 </div>
                 <div className="flex flex-col items-start sm:items-end gap-1">
                   <button type="button" onClick={onPublishRound} disabled={Boolean(publishDisabledReason)} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70">
-                    <i className="fa-solid fa-bullhorn mr-2" aria-hidden="true"></i>Publicar próximo concurso
+                    <i className="fa-solid fa-bullhorn mr-2" aria-hidden="true"></i>Publicar próxima rodada
                   </button>
                   {publishDisabledReason && (
                     <span className="text-[11px] text-amber-300/90" role="status">{publishDisabledReason}</span>

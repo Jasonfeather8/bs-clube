@@ -1,0 +1,1 @@
+ALTER TABLE public.draws ADD CONSTRAINT draws_contest_numeric_check CHECK (contest ~ '^[1-9][0-9]{0,8}$');

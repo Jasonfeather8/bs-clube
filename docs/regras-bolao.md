@@ -54,7 +54,7 @@ São **quatro** datas distintas e nenhuma pode ser reaproveitada no lugar de out
 | Data | Onde vive | Significado |
 | --- | --- | --- |
 | Criação do bolão | `pools.created_at` | Quando o bolão foi criado. |
-| Data do sorteio | `draws.draw_date` (uma por rodada) | A data do concurso, **informada pelo admin ao publicar a rodada**. |
+| Data do sorteio | `draws.draw_date` (uma por rodada) | O cadastro do bolão cria apenas uma **previsão** (rascunho de sorteio, sem concurso); a data oficial é confirmada ao publicar a rodada. |
 | Publicação da rodada | `pool_rounds.published_at` | Quando as dezenas daquela rodada foram publicadas no sistema. |
 | Conclusão do bolão | `pools.settled_at` / `prize_settlements.created_at` | Quando o bolão foi apurado e encerrado. |
 
@@ -78,9 +78,14 @@ lugar de outra.
 
 ## Operação administrativa
 
+- O concurso é informado apenas na publicação da rodada, é único no sistema e normalizado (sem zeros à esquerda).
+  O cadastro do bolão não informa concurso.
 - **Publicar rodada:** informa concurso, **data do sorteio** e as 6 dezenas. A 1ª rodada fecha a venda. A
-  publicação **não apura**, a menos que alguém atinja a meta naquela rodada.
-- **Corrigir rodada:** as dezenas de uma rodada podem ser reeditadas **enquanto o bolão não estiver apurado**.
+  publicação **não apura**, a menos que alguém atinja a meta naquela rodada. Se o concurso já existe, os dados
+  oficiais de dezenas e data são preservados, e as dezenas informadas devem ser idênticas às oficiais.
+- **Corrigir rodada:** é uma ação explícita, feita por **"Corrigir rodada"**. As dezenas de uma rodada podem ser
+  reeditadas **enquanto o bolão não estiver apurado**; a correção fica registrada em `public.pool_round_audit`
+  (quem, quando e dezenas antes/depois) e é recusada quando o concurso já foi usado na apuração de outro bolão.
   Depois da apuração, nada é editável.
 - Um concurso pode ser compartilhado entre bolões diferentes (o `draws` é global); o vínculo do bolão com cada
   rodada é o que define o histórico.

@@ -27,7 +27,6 @@ export default function NewCategoryModal({
   isSubmitting,
 }: NewCategoryModalProps) {
   const [name, setName] = useState('');
-  const [concurso, setConcurso] = useState('');
   const [quotaId, setQuotaId] = useState('');
   const [vagas, setVagas] = useState('');
   const { data: quotas = [], isLoading: isQuotasLoading } = useActiveQuotas();
@@ -41,7 +40,6 @@ export default function NewCategoryModal({
   useEffect(() => {
     if (!isOpen) return;
     setName(category?.name ?? '');
-    setConcurso(category?.concurso ?? '');
     setQuotaId(category?.quotaId ?? '');
     setVagas(category ? String(category.vagas) : '');
     setDrawDate(category?.drawDate?.slice(0, 10) ?? '');
@@ -58,10 +56,6 @@ export default function NewCategoryModal({
     e.preventDefault();
     if (!name.trim()) {
       setError('Por favor, informe o nome do bolão.');
-      return;
-    }
-    if (!/^\d+$/.test(concurso) || !Number.isSafeInteger(Number(concurso)) || Number(concurso) <= 0) {
-      setError('Informe um número de concurso válido.');
       return;
     }
     if (!quotaId) {
@@ -94,7 +88,6 @@ export default function NewCategoryModal({
     const parts = drawDate.split('-');
     onSubmit({
       name: name.trim(),
-      concurso: concurso.trim(),
       quotaId,
       vagas: vagasNum,
       drawDate: `${parts[2]}/${parts[1]}/${parts[0]}`,
@@ -118,7 +111,7 @@ export default function NewCategoryModal({
   const percentageSum = Number((Number(housePercentage) + Number(winnerPercentage)).toFixed(2));
   const isEditing = Boolean(category);
   const isFormComplete = Boolean(
-    name.trim() && concurso.trim() && quotaId && vagas.trim() && numbersPerBet.trim() && drawDate && housePercentage.trim() && winnerPercentage.trim(),
+    name.trim() && quotaId && vagas.trim() && numbersPerBet.trim() && drawDate && housePercentage.trim() && winnerPercentage.trim(),
   );
 
   return (
@@ -157,11 +150,6 @@ export default function NewCategoryModal({
             <input id="new-category-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Sorteio BIG 100" required className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 placeholder:text-slate-600" />
           </div>
 
-          <div>
-            <label htmlFor="new-category-contest" className="block text-xs font-semibold text-slate-400 mb-1">Número do Concurso Mega-Sena</label>
-            <input id="new-category-contest" type="text" inputMode="numeric" value={concurso} onChange={(e) => setConcurso(e.target.value.replace(/\D/g, ''))} placeholder="Ex: 2800" required className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 placeholder:text-slate-600" />
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="new-category-quota" className="block text-xs font-semibold text-slate-400 mb-1">Cota do catálogo</label>
@@ -183,7 +171,8 @@ export default function NewCategoryModal({
             </div>
             <div>
               <label htmlFor="new-category-draw-date" className="block text-xs font-semibold text-slate-400 mb-1">Data do Sorteio</label>
-              <input id="new-category-draw-date" type="date" value={drawDate} onChange={(e) => setDrawDate(e.target.value)} required className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
+              <input id="new-category-draw-date" type="date" value={drawDate} onChange={(e) => setDrawDate(e.target.value)} required disabled={isEditing && Number(category?.currentRound ?? 0) > 0} aria-describedby={isEditing && Number(category?.currentRound ?? 0) > 0 ? 'new-category-draw-date-help' : undefined} className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-60" />
+              {isEditing && Number(category?.currentRound ?? 0) > 0 && <p id="new-category-draw-date-help" className="mt-1 text-[11px] text-amber-300/90">A data do sorteio é definida na publicação da rodada e deve ser alterada por “Corrigir rodada”.</p>}
             </div>
           </div>
 

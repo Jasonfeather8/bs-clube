@@ -1,0 +1,1 @@
+ALTER TABLE public.pool_round_audit ENABLE ROW LEVEL SECURITY;

@@ -1,0 +1,1 @@
+GRANT SELECT, INSERT ON TABLE public.pool_round_audit TO service_role;

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX draws_contest_key ON public.draws (contest);

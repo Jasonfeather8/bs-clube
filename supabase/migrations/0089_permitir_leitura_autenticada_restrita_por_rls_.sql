@@ -1,0 +1,1 @@
+GRANT SELECT ON TABLE public.pool_round_audit TO authenticated;

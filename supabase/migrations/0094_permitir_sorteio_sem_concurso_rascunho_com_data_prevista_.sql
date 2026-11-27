@@ -1,0 +1,1 @@
+ALTER TABLE public.draws ALTER COLUMN contest DROP NOT NULL;
